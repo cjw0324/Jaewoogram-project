@@ -53,13 +53,16 @@ jobs:
         username: ubuntu
         key: ${{ secrets.EC2_PRIVATE_KEY }}
         script: |
-          # 모든 컨테이너 중지
-          sudo docker stop $(sudo docker ps -q) || true
-
           # Docker Hub에서 최신 이미지 pull
           sudo docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
           sudo docker pull ${{ secrets.DOCKER_USERNAME }}/backend-app:latest
           sudo docker pull ${{ secrets.DOCKER_USERNAME }}/frontend-app:latest
+
+          # 기존 컨테이너 정리
+          sudo docker stop frontend || true
+          sudo docker rm frontend || true
+          sudo docker stop backend || true
+          sudo docker rm backend || true
 
           # 컨테이너 실행
           sudo docker run -d --name backend -p 8080:8080 ${{ secrets.DOCKER_USERNAME }}/backend-app:latest
