@@ -3,7 +3,6 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "preinstall": "npx npm-force-resolutions",
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
@@ -24,8 +23,5 @@
     "eslint": "^9",
     "eslint-config-next": "15.2.4",
     "@eslint/eslintrc": "^3"
-  },
-  "resolutions": {
-    "picomatch": "4.0.2"
   }
 }
