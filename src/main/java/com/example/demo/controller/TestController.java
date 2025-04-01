@@ -7,12 +7,17 @@ import org.springframework.web.bind.annotation.RestController;
 import java.time.LocalDateTime;
 
 @RestController
-@RequestMapping("/test")
+@RequestMapping("/")
 public class TestController {
 
-    private static final String version = "v1.0.3";
+    private static final String version = "v1.0.4";
 
     @GetMapping
+    public String main() {
+        return "HELLO JAE WOO CI / CD with Github Action, Docker";
+    }
+
+    @GetMapping("/test")
     public String test() {
         return "Hello CI/CD with Docker! version : " + version + "local time : " + LocalDateTime.now();
     }
