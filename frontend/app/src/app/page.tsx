@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Image from "next/image";
 
 export default function Home() {
   const [message, setMessage] = useState("");
@@ -9,7 +8,7 @@ export default function Home() {
   useEffect(() => {
     const fetchMessage = async () => {
       try {
-        const res = await fetch("https://jaewoo.site/");
+        const res = await fetch("http://jaewoo.site/");
         const text = await res.text();
         setMessage(text);
       } catch (error) {
