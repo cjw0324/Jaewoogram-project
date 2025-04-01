@@ -81,19 +81,19 @@ jobs:
         key: ${{ secrets.EC2_PRIVATE_KEY }}
         script: |
           set -e
-          docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
+          sudo docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
 
           # Backend
-          docker pull ${{ secrets.DOCKER_USERNAME }}/backend-app:latest
-          docker stop backend-container || true
-          docker rm backend-container || true
-          docker run -d --name backend-container -p 8080:8080 ${{ secrets.DOCKER_USERNAME }}/backend-app:latest
+          sudo docker pull ${{ secrets.DOCKER_USERNAME }}/backend-app:latest
+          sudo docker stop backend-container || true
+          sudo docker rm backend-container || true
+          sudo docker run -d --name backend-container -p 8080:8080 ${{ secrets.DOCKER_USERNAME }}/backend-app:latest
 
           # Frontend
-          docker pull ${{ secrets.DOCKER_USERNAME }}/frontend-app:latest
-          docker stop frontend-container || true
-          docker rm frontend-container || true
-          docker run -d --name frontend-container -p 80:3000 ${{ secrets.DOCKER_USERNAME }}/frontend-app:latest
+          sudo docker pull ${{ secrets.DOCKER_USERNAME }}/frontend-app:latest
+          sudo docker stop frontend-container || true
+          sudo docker rm frontend-container || true
+          sudo docker run -d --name frontend-container -p 80:3000 ${{ secrets.DOCKER_USERNAME }}/frontend-app:latest
 
           # Clean up unused images
-          docker image prune -a -f
+          sudo docker image prune -a -f
