@@ -46,6 +46,14 @@ jobs:
       with:
         node-version: 20
 
+    - name: Clean npm cache
+      working-directory: frontend/app
+      run: npm cache clean --force
+
+    - name: Set npm registry (optional)
+      working-directory: frontend/app
+      run: npm config set registry https://registry.npmjs.org/
+
     - name: Install dependencies (frontend)
       working-directory: frontend/app
       run: npm ci
