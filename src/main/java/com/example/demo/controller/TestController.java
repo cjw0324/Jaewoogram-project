@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 @RequestMapping("/test")
 public class TestController {
 
-    private static final String version = "v1.0.2";
+    private static final String version = "v1.0.3";
 
     @GetMapping
     public String test() {
