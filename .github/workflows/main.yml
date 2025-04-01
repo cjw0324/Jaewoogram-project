@@ -1,4 +1,4 @@
-name: CI/CD using github actions & docker
+name: CI/CD using GitHub Actions & Docker
 
 on:
   push:
@@ -8,75 +8,79 @@ on:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
     permissions:
       contents: read
 
     steps:
-    - uses: actions/checkout@v4
+    - name: 📥 Checkout repository
+      uses: actions/checkout@v4
 
     # ===============================
     # 1. BACKEND - Spring Boot Build
     # ===============================
-    - name: Set up JDK 17
+    - name: ☕ Set up JDK 17
       uses: actions/setup-java@v4
       with:
         java-version: '17'
         distribution: 'temurin'
 
-    - name: Setup Gradle
+    - name: ⚙️ Setup Gradle
       uses: gradle/actions/setup-gradle@v3
 
-    - name: Build with Gradle Wrapper
+    - name: 🔨 Build Spring Boot app
       working-directory: backend/demo
       run: ./gradlew build
 
-    - name: Docker build & push (backend)
+    - name: 🐳 Docker build & push (backend)
       run: |
+        set -e
         docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
-        docker build -t ${{ secrets.DOCKER_USERNAME }}/backend-app ./backend/demo
-        docker push ${{ secrets.DOCKER_USERNAME }}/backend-app
+        docker build -t ${{ secrets.DOCKER_USERNAME }}/backend-app:latest ./backend/demo
+        docker push ${{ secrets.DOCKER_USERNAME }}/backend-app:latest
 
     # ===============================
     # 2. FRONTEND - Next.js Build
     # ===============================
-    - name: Setup Node.js
+    - name: 🟦 Setup Node.js
       uses: actions/setup-node@v3
       with:
         node-version: 20
 
-    - name: Clean npm cache
+    - name: 🧹 Clean npm cache
       working-directory: frontend/app
       run: npm cache clean --force
 
-    - name: Set npm registry (optional)
+    - name: 🌐 Set npm registry
       working-directory: frontend/app
       run: npm config set registry https://registry.npmjs.org/
 
-    - name: Install dependencies (frontend)
+    - name: 📦 Install dependencies
       working-directory: frontend/app
       run: npm ci
 
-    - name: Build (frontend)
+    - name: 🏗️ Build Next.js app
       working-directory: frontend/app
       run: npm run build
 
-    - name: Docker build & push (frontend)
+    - name: 🐳 Docker build & push (frontend)
       run: |
-        docker build -t ${{ secrets.DOCKER_USERNAME }}/frontend-app ./frontend/app
-        docker push ${{ secrets.DOCKER_USERNAME }}/frontend-app
+        set -e
+        docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
+        docker build -t ${{ secrets.DOCKER_USERNAME }}/frontend-app:latest ./frontend/app
+        docker push ${{ secrets.DOCKER_USERNAME }}/frontend-app:latest
 
     # ===============================
-    # 3. Deploy to EC2
+    # 3. DEPLOY TO EC2
     # ===============================
-    - name: Deploy Docker images to EC2
+    - name: 🚀 Deploy to EC2
       uses: appleboy/ssh-action@master
       with:
         host: ${{ secrets.EC2_HOST }}
         username: ubuntu
         key: ${{ secrets.EC2_PRIVATE_KEY }}
         script: |
+          set -e
           docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
 
           # Backend
@@ -91,5 +95,5 @@ jobs:
           docker rm frontend-container || true
           docker run -d --name frontend-container -p 80:3000 ${{ secrets.DOCKER_USERNAME }}/frontend-app:latest
 
-          # Cleanup
+          # Clean up unused images
           docker image prune -a -f
