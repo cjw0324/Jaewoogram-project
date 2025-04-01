@@ -8,7 +8,7 @@ export default function Home() {
   useEffect(() => {
     const fetchMessage = async () => {
       try {
-        const res = await fetch("https://jaewoo.site/api/");
+        const res = await fetch("/api/");
         const text = await res.text();
         setMessage(text);
       } catch (error) {
