@@ -16,6 +16,9 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
+    # ===============================
+    # 1. BACKEND - Spring Boot Build
+    # ===============================
     - name: Set up JDK 17
       uses: actions/setup-java@v4
       with:
@@ -29,21 +32,56 @@ jobs:
       working-directory: backend/demo
       run: ./gradlew build
 
-    - name: Docker build & push to Docker Hub
+    - name: Docker build & push (backend)
       run: |
         docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
-        docker build -t ${{ secrets.DOCKER_USERNAME }}/docker-test ./backend/demo
-        docker push ${{ secrets.DOCKER_USERNAME }}/docker-test
+        docker build -t ${{ secrets.DOCKER_USERNAME }}/backend-app ./backend/demo
+        docker push ${{ secrets.DOCKER_USERNAME }}/backend-app
 
-    - name: Docker image pull & Deploy to EC2
+    # ===============================
+    # 2. FRONTEND - Next.js Build
+    # ===============================
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: 20
+
+    - name: Install dependencies (frontend)
+      working-directory: frontend/app
+      run: npm ci
+
+    - name: Build (frontend)
+      working-directory: frontend/app
+      run: npm run build
+
+    - name: Docker build & push (frontend)
+      run: |
+        docker build -t ${{ secrets.DOCKER_USERNAME }}/frontend-app ./frontend/app
+        docker push ${{ secrets.DOCKER_USERNAME }}/frontend-app
+
+    # ===============================
+    # 3. Deploy to EC2
+    # ===============================
+    - name: Deploy Docker images to EC2
       uses: appleboy/ssh-action@master
       with:
         host: ${{ secrets.EC2_HOST }}
         username: ubuntu
         key: ${{ secrets.EC2_PRIVATE_KEY }}
         script: |
-          sudo docker pull ${{ secrets.DOCKER_USERNAME }}/docker-test:latest
-          sudo docker stop $(sudo docker ps -a -q) || true
-          sudo docker rm $(sudo docker ps --filter 'status=exited' -a -q) || true
-          sudo docker run -d --log-driver=syslog -p 8080:8080 ${{ secrets.DOCKER_USERNAME }}/docker-test:latest
-          sudo docker image prune -a -f
+          docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
+
+          # Backend
+          docker pull ${{ secrets.DOCKER_USERNAME }}/backend-app:latest
+          docker stop backend-container || true
+          docker rm backend-container || true
+          docker run -d --name backend-container -p 8080:8080 ${{ secrets.DOCKER_USERNAME }}/backend-app:latest
+
+          # Frontend
+          docker pull ${{ secrets.DOCKER_USERNAME }}/frontend-app:latest
+          docker stop frontend-container || true
+          docker rm frontend-container || true
+          docker run -d --name frontend-container -p 80:3000 ${{ secrets.DOCKER_USERNAME }}/frontend-app:latest
+
+          # Cleanup
+          docker image prune -a -f
