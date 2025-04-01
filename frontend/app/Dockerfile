@@ -1,34 +1,32 @@
 # 1. Build stage
-FROM node:20 AS builder
+FROM node:18.18.0 AS builder
 
 WORKDIR /app
 
-COPY package*.json ./
+# 캐시 최적화를 위해 package 파일만 먼저 복사
+COPY package.json package-lock.json ./
+
+# 의존성 설치
 RUN npm ci
 
+# 앱 전체 복사
 COPY . .
 
-# Next.js 환경 변수 설정 (필요 시)
-# ARG NEXT_PUBLIC_API_URL
-# ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
-
+# 빌드
 RUN npm run build
 
-# 2. Production stage (with lighter image)
-FROM node:20-slim AS runner
+# 2. Production stage
+FROM node:18.18.0-slim AS runner
 
 WORKDIR /app
 
-# 프로덕션 실행에 필요한 파일만 복사
-COPY --from=builder /app/package*.json ./
+COPY --from=builder /app/package.json ./
 COPY --from=builder /app/.next .next
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/next.config.ts ./
 
-# Next.js 앱 포트
 EXPOSE 3000
-
 ENV NODE_ENV production
 
-CMD ["node_modules/.bin/next", "start"]
+CMD ["npm", "start"]
