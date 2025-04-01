@@ -27,5 +27,8 @@
   },
   "resolutions": {
     "picomatch": "^4.0.2"
+  },
+  "overrides": {
+    "picomatch": "4.0.2"
   }
 }
