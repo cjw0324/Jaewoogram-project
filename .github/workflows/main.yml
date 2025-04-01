@@ -15,6 +15,7 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
+    # 백엔드 Gradle 빌드
     - name: Set up JDK 17
       uses: actions/setup-java@v4
       with:
@@ -26,20 +27,22 @@ jobs:
 
     - name: Build Backend with Gradle
       run: ./gradlew build
-      working-directory: ./backend
+      working-directory: ./backend/demo
 
-    # Backend Docker build & Push
+    # Docker 로그인 (공통)
+    - name: Docker login
+      run: docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
+
+    # 백엔드 Docker build & push
     - name: Docker build & push - Backend
       run: |
-        docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
-        docker build -t ${{ secrets.DOCKER_USERNAME }}/backend-app ./backend
+        docker build -t ${{ secrets.DOCKER_USERNAME }}/backend-app ./backend/demo
         docker push ${{ secrets.DOCKER_USERNAME }}/backend-app
 
-    # Frontend Docker build & Push
+    # 프론트엔드 Docker build & push
     - name: Docker build & push - Frontend
       run: |
-        docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
-        docker build -t ${{ secrets.DOCKER_USERNAME }}/frontend-app ./frontend
+        docker build -t ${{ secrets.DOCKER_USERNAME }}/frontend-app ./frontend/app
         docker push ${{ secrets.DOCKER_USERNAME }}/frontend-app
 
     # EC2 배포
@@ -50,18 +53,18 @@ jobs:
         username: ubuntu
         key: ${{ secrets.EC2_PRIVATE_KEY }}
         script: |
-          # Stop all running containers
+          # 모든 컨테이너 중지
           sudo docker stop $(sudo docker ps -q) || true
 
-          # Pull latest images
+          # Docker Hub에서 최신 이미지 pull
           sudo docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
           sudo docker pull ${{ secrets.DOCKER_USERNAME }}/backend-app:latest
           sudo docker pull ${{ secrets.DOCKER_USERNAME }}/frontend-app:latest
 
-          # Run containers (customize as needed)
+          # 컨테이너 실행
           sudo docker run -d --name backend -p 8080:8080 ${{ secrets.DOCKER_USERNAME }}/backend-app:latest
           sudo docker run -d --name frontend -p 3000:3000 ${{ secrets.DOCKER_USERNAME }}/frontend-app:latest
 
-          # Cleanup
+          # 정리
           sudo docker container prune -f
           sudo docker image prune -a -f
