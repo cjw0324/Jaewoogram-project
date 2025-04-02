@@ -12,6 +12,9 @@ RUN npm ci
 # 앱 전체 복사
 COPY . .
 
+# 환경변수 파일 포함
+COPY .env.production .env.production
+
 # 빌드
 RUN npm run build
 
@@ -25,6 +28,9 @@ COPY --from=builder /app/.next .next
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/next.config.ts ./
+
+# 실행 시에도 환경변수 파일 포함
+COPY --from=builder /app/.env.production ./
 
 EXPOSE 3000
 ENV NODE_ENV production

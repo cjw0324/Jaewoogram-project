@@ -2,18 +2,30 @@
 
 import { useEffect, useState } from "react";
 
+interface MainResponse {
+  message: string;
+  version: string;
+  timestamp: string;
+}
+
 export default function Home() {
-  const [message, setMessage] = useState("");
+  const [data, setData] = useState<MainResponse | null>(null);
 
   useEffect(() => {
     const fetchMessage = async () => {
       try {
-        const res = await fetch("/api/");
-        const text = await res.text();
-        setMessage(text);
+        const res = await fetch(
+          process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080/"
+        );
+        const json = await res.json();
+        setData(json);
       } catch (error) {
         console.error("Failed to fetch:", error);
-        setMessage("Failed to fetch data");
+        setData({
+          message: "Failed to fetch data",
+          version: "",
+          timestamp: "",
+        });
       }
     };
 
@@ -25,9 +37,17 @@ export default function Home() {
       <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
         <div className="text-center text-base sm:text-left">
           <p className="mb-4 font-semibold">✅ 응답 결과:</p>
-          <pre className="bg-gray-100 dark:bg-gray-800 p-4 rounded max-w-md overflow-auto">
-            {message}
-          </pre>
+          <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded max-w-md overflow-auto">
+            <p>
+              <strong>Message:</strong> {data?.message}
+            </p>
+            <p>
+              <strong>Version:</strong> {data?.version}
+            </p>
+            <p>
+              <strong>Timestamp:</strong> {data?.timestamp}
+            </p>
+          </div>
         </div>
       </main>
       <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
