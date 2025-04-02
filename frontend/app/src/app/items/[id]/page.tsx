@@ -44,7 +44,7 @@ export default function ItemDetailPage() {
 
   return (
     <div className="p-8 space-y-4">
-      <h1 className="text-xl font-bold">📦 아이템 상세</h1>
+      <h1 className="text-xl font-bold">📦 아이템 INFO</h1>
       <p>🆔 ID: {item.itemId}</p>
       <p>📝 이름: {item.itemName}</p>
       <p>❤️ 좋아요: {likeCount}</p>
