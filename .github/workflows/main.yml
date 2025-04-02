@@ -39,6 +39,12 @@ jobs:
         docker build -t ${{ secrets.DOCKER_USERNAME }}/backend-app ./backend/demo
         docker push ${{ secrets.DOCKER_USERNAME }}/backend-app
 
+    # 프론트엔드 환경변수 파일 생성
+    - name: Inject .env.production for Frontend
+      run: |
+        echo "NEXT_PUBLIC_API_BASE_URL=${{ secrets.NEXT_PUBLIC_API_BASE_URL }}" > ./frontend/app/.env.production
+
+
     # 프론트엔드 Docker build & push
     - name: Docker build & push - Frontend
       run: |
