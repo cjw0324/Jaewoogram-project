@@ -1,5 +1,6 @@
 package com.example.demo.domain.basic.controller;
 
+import com.example.demo.domain.basic.dto.ItemCreateRequest;
 import com.example.demo.domain.basic.dto.ItemRequestDto;
 import com.example.demo.domain.basic.dto.ItemResponseDto;
 import com.example.demo.domain.basic.service.ItemService;
@@ -30,7 +31,7 @@ public class ItemController {
     }
 
     @PostMapping
-    public ResponseEntity<ItemResponseDto> createItem(@RequestBody ItemRequestDto requestDto) {
+    public ResponseEntity<ItemResponseDto> createItem(@RequestBody ItemCreateRequest requestDto) {
         ItemResponseDto created = itemService.createItem(requestDto);
         return ResponseEntity
                 .status(201)

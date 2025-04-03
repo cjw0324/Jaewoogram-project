@@ -1,10 +1,13 @@
 package com.example.demo.domain.basic.service;
 
 
+import com.example.demo.domain.basic.dto.ItemCreateRequest;
 import com.example.demo.domain.basic.dto.ItemRequestDto;
 import com.example.demo.domain.basic.dto.ItemResponseDto;
 import com.example.demo.domain.basic.entity.Item;
+import com.example.demo.domain.basic.entity.ItemImage;
 import com.example.demo.domain.basic.repository.ItemRepository;
+import lombok.RequiredArgsConstructor;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -12,25 +15,18 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class ItemService {
     private final ItemRepository itemRepository;
     private final RedissonClient redissonClient;
     private final RedisTemplate<String, Object> redisTemplate;
-
-
-    public ItemService(ItemRepository itemRepository,
-                       RedissonClient redissonClient,
-                       RedisTemplate<String, Object> redisTemplate) {
-        this.itemRepository = itemRepository;
-        this.redissonClient = redissonClient;
-        this.redisTemplate = redisTemplate;
-    }
 
     public void likeItem(Long itemId) {
         String lockKey = "lock:item:" + itemId;
@@ -79,10 +75,23 @@ public class ItemService {
         return cachedLikeCount;
     }
 
-    public ItemResponseDto createItem(ItemRequestDto dto) {
+    @Transactional
+    public ItemResponseDto createItem(ItemCreateRequest request) {
         Item item = new Item();
-        item.setItem_name(dto.getItemName());
-        item.setLike_count(0L);
+        item.setItem_name(request.getItemName());
+        item.setLike_count(0L); // 기본값
+
+        // 첫 번째 이미지를 대표 이미지로 설정 (선택사항)
+        if (!request.getImageUrls().isEmpty()) {
+            item.setImageUrl(request.getImageUrls().get(0));
+        }
+
+        for (String url : request.getImageUrls()) {
+            ItemImage image = new ItemImage();
+            image.setImageURL(url);
+            item.addImage(image); // 연관관계 편의 메서드 사용
+        }
+
         Item saved = itemRepository.save(item);
         return toDto(saved);
     }
@@ -124,8 +133,15 @@ public class ItemService {
         dto.setItemId(item.getItem_id());
         dto.setItemName(item.getItem_name());
         dto.setLikeCount(item.getLike_count());
+
+        List<String> imageUrls = item.getImages().stream()
+                .map(ItemImage::getImageURL)
+                .toList();
+        dto.setImageUrls(new ArrayList<>(imageUrls));
+
         return dto;
     }
+
 
     @Scheduled(fixedRate = 300000) // 5분마다 실행
     public void syncLikeCountFromRedisToDb() {

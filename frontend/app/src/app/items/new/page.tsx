@@ -6,6 +6,7 @@ import Link from "next/link";
 
 export default function NewItemPage() {
   const [itemName, setItemName] = useState("");
+  const [files, setFiles] = useState<File[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
@@ -16,15 +17,53 @@ export default function NewItemPage() {
     setError(null);
 
     try {
+      let imageUrls: string[] = [];
+
+      // 1. presigned URL 요청
+      if (files.length > 0) {
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/s3/presigned-urls`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(
+              files.map((file) => ({
+                filename: file.name,
+                contentType: file.type,
+              }))
+            ),
+          }
+        );
+
+        const presigned = await res.json();
+
+        // 2. S3로 직접 업로드
+        await Promise.all(
+          presigned.map((entry: { url: string; s3Url: string }, idx: number) =>
+            fetch(entry.url, {
+              method: "PUT",
+              headers: {
+                "Content-Type": files[idx].type,
+              },
+              body: files[idx],
+            })
+          )
+        );
+
+        imageUrls = presigned.map((entry: { s3Url: string }) => entry.s3Url);
+      }
+
+      // 3. 아이템 생성 API 호출
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/items`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ itemName }),
+        body: JSON.stringify({
+          itemName,
+          imageUrls,
+        }),
       });
 
-      if (!res.ok) {
-        throw new Error("아이템 생성에 실패했습니다");
-      }
+      if (!res.ok) throw new Error("아이템 생성에 실패했습니다");
 
       router.push("/items");
     } catch (err) {
@@ -36,7 +75,6 @@ export default function NewItemPage() {
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-white to-gray-50 dark:from-gray-900 dark:to-gray-800">
-      {/* Header */}
       <header className="py-6 px-4 sm:px-6 lg:px-8 border-b border-gray-200 dark:border-gray-700">
         <div className="max-w-5xl mx-auto flex justify-between items-center">
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
@@ -58,7 +96,6 @@ export default function NewItemPage() {
         </div>
       </header>
 
-      {/* Main content */}
       <main className="flex-1 py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-2xl mx-auto">
           <div className="mb-8">
@@ -66,67 +103,24 @@ export default function NewItemPage() {
               href="/items"
               className="inline-flex items-center text-sm font-medium text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
             >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-4 w-4 mr-1"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M10 19l-7-7m0 0l7-7m-7 7h18"
-                />
-              </svg>
-              아이템 목록으로 돌아가기
+              ← 아이템 목록으로 돌아가기
             </Link>
           </div>
 
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden border border-gray-200 dark:border-gray-700">
             <div className="p-6">
-              <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-6 flex items-center">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-5 w-5 mr-2 text-blue-600 dark:text-blue-400"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-                  />
-                </svg>
+              <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-6">
                 새 아이템 생성
               </h2>
 
               {error && (
                 <div className="mb-6 bg-red-50 dark:bg-red-900/20 p-4 rounded-md border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300">
-                  <div className="flex items-center">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-5 w-5 mr-2"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-                      />
-                    </svg>
-                    {error}
-                  </div>
+                  {error}
                 </div>
               )}
 
               <form onSubmit={handleSubmit} className="space-y-6">
+                {/* 아이템 이름 */}
                 <div>
                   <label
                     htmlFor="itemName"
@@ -137,69 +131,50 @@ export default function NewItemPage() {
                   <input
                     id="itemName"
                     type="text"
-                    placeholder="새 아이템의 이름을 입력하세요"
                     value={itemName}
                     onChange={(e) => setItemName(e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-white"
                     required
                   />
                 </div>
 
+                {/* 이미지 업로드 */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    이미지 첨부
+                  </label>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    onChange={(e) => {
+                      if (e.target.files) {
+                        setFiles(Array.from(e.target.files));
+                      }
+                    }}
+                    className="block w-full text-sm text-gray-500 dark:text-gray-400
+                    file:mr-4 file:py-2 file:px-4
+                    file:rounded-md file:border-0
+                    file:text-sm file:font-semibold
+                    file:bg-blue-50 file:text-blue-700
+                    hover:file:bg-blue-100"
+                  />
+                </div>
+
+                {/* 버튼 */}
                 <div className="flex items-center justify-end space-x-3">
                   <Link
                     href="/items"
-                    className="inline-flex items-center justify-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
+                    className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm text-gray-700 dark:text-gray-200"
                   >
                     취소
                   </Link>
                   <button
                     type="submit"
                     disabled={loading || !itemName.trim()}
-                    className="inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-70 transition-colors"
+                    className="px-4 py-2 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 disabled:opacity-70"
                   >
-                    {loading ? (
-                      <>
-                        <svg
-                          className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
-                          xmlns="http://www.w3.org/2000/svg"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                        >
-                          <circle
-                            className="opacity-25"
-                            cx="12"
-                            cy="12"
-                            r="10"
-                            stroke="currentColor"
-                            strokeWidth="4"
-                          ></circle>
-                          <path
-                            className="opacity-75"
-                            fill="currentColor"
-                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                          ></path>
-                        </svg>
-                        생성 중...
-                      </>
-                    ) : (
-                      <>
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          className="h-4 w-4 mr-1"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-                          />
-                        </svg>
-                        생성하기
-                      </>
-                    )}
+                    {loading ? "생성 중..." : "생성하기"}
                   </button>
                 </div>
               </form>
@@ -211,56 +186,13 @@ export default function NewItemPage() {
               도움말
             </h3>
             <p className="text-gray-600 dark:text-gray-300 mb-4">
-              이 화면에서 새로운 아이템을 생성할 수 있습니다. 아이템 이름을
-              입력하고 생성 버튼을 클릭하면 새 아이템이 등록됩니다.
+              이 화면에서 새로운 아이템을 생성할 수 있습니다. 이름을 입력하고
+              이미지를 첨부한 후 생성 버튼을 누르세요.
             </p>
-            <div className="flex flex-col sm:flex-row gap-3">
-              <Link
-                href="/items"
-                className="inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-4 w-4 mr-1"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M4 6h16M4 10h16M4 14h16M4 18h16"
-                  />
-                </svg>
-                아이템 목록 보기
-              </Link>
-              <Link
-                href="/"
-                className="inline-flex items-center justify-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-4 w-4 mr-1"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
-                  />
-                </svg>
-                대시보드로 돌아가기
-              </Link>
-            </div>
           </div>
         </div>
       </main>
 
-      {/* Footer */}
       <footer className="py-6 px-4 sm:px-6 lg:px-8 border-t border-gray-200 dark:border-gray-700">
         <div className="max-w-5xl mx-auto text-center text-sm text-gray-500 dark:text-gray-400">
           © {new Date().getFullYear()} API 대시보드. 모든 권리 보유.

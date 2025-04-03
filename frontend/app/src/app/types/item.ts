@@ -4,4 +4,5 @@ export interface ItemResponseDto {
   itemId: number;
   itemName: string;
   likeCount: number;
+  imageUrls: string[];
 }

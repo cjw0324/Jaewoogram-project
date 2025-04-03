@@ -4,9 +4,7 @@ import lombok.Data;
 import java.util.List;
 
 @Data
-public class ItemResponseDto {
-    private Long itemId;
+public class ItemCreateRequest {
     private String itemName;
-    private Long likeCount;
     private List<String> imageUrls;
 }

@@ -1,10 +1,10 @@
 package com.example.demo.domain.basic.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.Data;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Data
@@ -13,7 +13,18 @@ public class Item {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long item_id;
 
+
     private String item_name;
 
     private Long like_count;
+
+    private String imageUrl;
+
+    @OneToMany(mappedBy = "item", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ItemImage> images = new ArrayList<>();
+
+    public void addImage(ItemImage image) {
+        images.add(image);
+        image.setItem(this);
+    }
 }
