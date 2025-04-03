@@ -86,8 +86,6 @@ GitHub Actions를 통해 `main` 브랜치에 push하면 다음이 자동으로 �
 5. **자동화된 인증서 관리**
    - Let's Encrypt 인증서 자동 갱신 (cron job)
 
-![CI/CD 흐름도](https://via.placeholder.com/800x400?text=CI/CD+Flow+Diagram)
-
 ## ⚙️ 사용 기술
 
 | 영역 | 스택 |
