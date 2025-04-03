@@ -15,6 +15,13 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
+    # 백엔드 빌드 전에 application-secret.properties 파일 생성
+    - name: Create application-secret.properties
+      run: |
+        echo "db.url=${{ secrets.SPRING_DATASOURCE_URL }}" > ./backend/demo/src/main/resources/application-secret.properties
+        echo "db.username=${{ secrets.SPRING_DATASOURCE_USERNAME }}" >> ./backend/demo/src/main/resources/application-secret.properties
+        echo "db.password=${{ secrets.SPRING_DATASOURCE_PASSWORD }}" >> ./backend/demo/src/main/resources/application-secret.properties
+
     # 백엔드 Gradle 빌드
     - name: Set up JDK 17
       uses: actions/setup-java@v4
@@ -70,22 +77,11 @@ jobs:
           sudo docker stop backend || true
           sudo docker rm backend || true
 
-          # 1. application-secret.properties 파일 생성
-          echo "db.url=${{ secrets.SPRING_DATASOURCE_URL }}" > /home/ubuntu/application-secret.properties
-          echo "db.username=${{ secrets.SPRING_DATASOURCE_USERNAME }}" >> /home/ubuntu/application-secret.properties
-          echo "db.password=${{ secrets.SPRING_DATASOURCE_PASSWORD }}" >> /home/ubuntu/application-secret.properties
-          
-          # 2. 컨테이너 생성 후 파일 복사
-          sudo docker create --name backend-tmp ${{ secrets.DOCKER_USERNAME }}/backend-app:latest
-          sudo docker cp /home/ubuntu/application-secret.properties backend-tmp:/app/classes/application-secret.properties
-          sudo docker commit backend-tmp ${{ secrets.DOCKER_USERNAME }}/backend-app-with-secret
-          sudo docker rm backend-tmp
-          
-          # 3. 백엔드 컨테이너 실행 (마운트 x, 환경변수만 설정)
+          # 컨테이너 직접 실행 (파일 복사 없이)
           sudo docker run -d --name backend \
             -e SPRING_PROFILES_ACTIVE=prod \
             -p 8080:8080 \
-            ${{ secrets.DOCKER_USERNAME }}/backend-app-with-secret
+            ${{ secrets.DOCKER_USERNAME }}/backend-app:latest
 
           # 프론트엔드 컨테이너 실행
           sudo docker run -d --name frontend -p 3000:3000 ${{ secrets.DOCKER_USERNAME }}/frontend-app:latest
