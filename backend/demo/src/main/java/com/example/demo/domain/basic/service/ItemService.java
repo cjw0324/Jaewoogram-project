@@ -112,10 +112,27 @@ public class ItemService {
     public ItemResponseDto updateItem(Long id, ItemRequestDto dto) {
         Item item = itemRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Item not found"));
+
         item.setItem_name(dto.getItemName());
-        Item updated = itemRepository.save(item);
-        return toDto(updated);
+
+        // 대표 이미지 업데이트
+        if (dto.getImageUrls() != null && !dto.getImageUrls().isEmpty()) {
+            item.setImageUrl(dto.getImageUrls().get(0));
+        }
+
+        // 기존 이미지 비우기
+        item.getImages().clear();
+
+        // 새 이미지 추가
+        for (String url : dto.getImageUrls()) {
+            ItemImage newImage = new ItemImage();
+            newImage.setImageURL(url);
+            item.addImage(newImage); // 연관관계 메서드 사용
+        }
+
+        return toDto(itemRepository.save(item));
     }
+
 
     @Transactional
     public ItemResponseDto deleteItem(Long id) {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { ItemResponseDto } from "../../../types/item";
 import Link from "next/link";
@@ -10,9 +10,15 @@ export default function EditItemPage() {
   const id = params?.id as string; // id가 문자열임을 명시적으로 지정
   const router = useRouter();
   const [itemName, setItemName] = useState("");
+  const [imageUrls, setImageUrls] = useState<string[]>([]);
+  const [newImages, setNewImages] = useState<File[]>([]);
+  const [previewUrls, setPreviewUrls] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     // id가 존재하는지 확인
@@ -33,6 +39,11 @@ export default function EditItemPage() {
         }
         const data: ItemResponseDto = await res.json();
         setItemName(data.itemName);
+
+        // 이미지 URL이 있으면 설정
+        if (data.imageUrls && Array.isArray(data.imageUrls)) {
+          setImageUrls(data.imageUrls);
+        }
       } catch (err) {
         setError(err instanceof Error ? err.message : "오류가 발생했습니다");
         console.error("Failed to fetch item:", err);
@@ -44,17 +55,137 @@ export default function EditItemPage() {
     fetchItem();
   }, [id]);
 
+  // 이미지 파일이 선택되었을 때 호출되는 함수
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      const selectedFiles = Array.from(e.target.files);
+      setNewImages((prev) => [...prev, ...selectedFiles]);
+
+      // 선택된 파일의 미리보기 URL 생성
+      const newPreviewUrls = selectedFiles.map((file) =>
+        URL.createObjectURL(file)
+      );
+      setPreviewUrls((prev) => [...prev, ...newPreviewUrls]);
+    }
+  };
+
+  // 이미지 삭제 (기존 이미지)
+  const handleRemoveExistingImage = (index: number) => {
+    setImageUrls((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  // 이미지 삭제 (새로 추가된 이미지)
+  const handleRemoveNewImage = (index: number) => {
+    // 미리보기 URL 해제
+    URL.revokeObjectURL(previewUrls[index]);
+
+    setPreviewUrls((prev) => prev.filter((_, i) => i !== index));
+    setNewImages((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  // 이미지 업로드 함수 (Presigned URL 사용)
+  const uploadImages = async (): Promise<string[]> => {
+    if (newImages.length === 0) return [];
+
+    setIsUploading(true);
+    const s3Urls: string[] = [];
+
+    try {
+      // 1. Presigned URL 요청
+      const fileRequests = newImages.map((file) => ({
+        filename: file.name,
+        contentType: file.type,
+      }));
+
+      const presignedResponse = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/s3/presigned-urls`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(fileRequests),
+        }
+      );
+
+      if (!presignedResponse.ok) {
+        throw new Error("Presigned URL을 가져오는데 실패했습니다");
+      }
+
+      const presignedData = await presignedResponse.json();
+
+      // 2. 각 이미지를 Presigned URL을 통해 S3에 업로드
+      for (let i = 0; i < newImages.length; i++) {
+        const file = newImages[i];
+        const { url, s3Url } = presignedData[i];
+
+        // PUT 요청으로 S3에 직접 업로드
+        const uploadResponse = await fetch(url, {
+          method: "PUT",
+          headers: {
+            "Content-Type": file.type,
+          },
+          body: file,
+        });
+
+        if (!uploadResponse.ok) {
+          throw new Error(`이미지 업로드 실패: ${file.name}`);
+        }
+
+        // 성공적으로 업로드된 S3 URL 저장
+        s3Urls.push(s3Url);
+
+        // 업로드 진행 상황 업데이트
+        setUploadProgress(Math.round(((i + 1) / newImages.length) * 100));
+      }
+
+      return s3Urls;
+    } catch (error) {
+      console.error("이미지 업로드 중 오류:", error);
+      throw error;
+    } finally {
+      setIsUploading(false);
+      setUploadProgress(0);
+    }
+  };
+
   const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
     setError(null);
+
     try {
+      // 1. 새 이미지 업로드 시도
+      let allImageUrls = [...imageUrls];
+
+      if (newImages.length > 0) {
+        try {
+          const uploadedUrls = await uploadImages();
+          allImageUrls = [...allImageUrls, ...uploadedUrls];
+        } catch (uploadError) {
+          console.error(
+            "이미지 업로드 실패, 기존 이미지만 유지합니다:",
+            uploadError
+          );
+          // 이미지 업로드에 실패하더라도 기존 이미지만 사용하여 계속 진행
+          setError(
+            "이미지 업로드에 실패했지만, 기존 정보로 업데이트를 진행합니다."
+          );
+        }
+      }
+
+      // 2. 아이템 정보 업데이트
+      const updateData: any = { itemName };
+
+      // API가 imageUrls 필드를 지원하는 경우에만 포함
+      if (allImageUrls.length > 0) {
+        updateData.imageUrls = allImageUrls;
+      }
+
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_API_BASE_URL}/items/${id}`,
         {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ itemName }),
+          body: JSON.stringify(updateData),
         }
       );
 
@@ -67,6 +198,13 @@ export default function EditItemPage() {
       setError(err instanceof Error ? err.message : "오류가 발생했습니다");
       console.error("Failed to update item:", err);
       setSaving(false);
+    }
+  };
+
+  // 파일 선택 버튼 클릭 핸들러
+  const handleSelectFilesClick = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
     }
   };
 
@@ -165,6 +303,7 @@ export default function EditItemPage() {
               {loading ? (
                 <div className="animate-pulse space-y-4">
                   <div className="h-10 bg-gray-200 dark:bg-gray-700 rounded"></div>
+                  <div className="h-40 bg-gray-200 dark:bg-gray-700 rounded"></div>
                   <div className="h-10 bg-gray-200 dark:bg-gray-700 rounded w-1/3"></div>
                 </div>
               ) : (
@@ -188,6 +327,156 @@ export default function EditItemPage() {
                     <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
                       아이템 ID: {id}
                     </p>
+                  </div>
+
+                  {/* 이미지 섹션 */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      이미지
+                    </label>
+
+                    {/* 기존 이미지 미리보기 */}
+                    {imageUrls.length > 0 && (
+                      <div className="mb-4">
+                        <h4 className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-2">
+                          기존 이미지
+                        </h4>
+                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                          {imageUrls.map((url, index) => (
+                            <div
+                              key={`existing-${index}`}
+                              className="relative group border border-gray-200 dark:border-gray-700 rounded-md overflow-hidden"
+                            >
+                              <img
+                                src={url}
+                                alt={`아이템 이미지 ${index + 1}`}
+                                className="w-full h-24 object-cover"
+                              />
+                              <button
+                                type="button"
+                                onClick={() => handleRemoveExistingImage(index)}
+                                className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                                title="이미지 삭제"
+                              >
+                                <svg
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  className="h-4 w-4"
+                                  fill="none"
+                                  viewBox="0 0 24 24"
+                                  stroke="currentColor"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M6 18L18 6M6 6l12 12"
+                                  />
+                                </svg>
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* 새 이미지 미리보기 */}
+                    {previewUrls.length > 0 && (
+                      <div className="mb-4">
+                        <h4 className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-2">
+                          새 이미지
+                        </h4>
+                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                          {previewUrls.map((url, index) => (
+                            <div
+                              key={`new-${index}`}
+                              className="relative group border border-gray-200 dark:border-gray-700 rounded-md overflow-hidden"
+                            >
+                              <img
+                                src={url}
+                                alt={`새 이미지 ${index + 1}`}
+                                className="w-full h-24 object-cover"
+                              />
+                              <div className="absolute bottom-0 left-0 right-0 bg-blue-500 text-white text-xs px-2 py-1">
+                                새 이미지
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => handleRemoveNewImage(index)}
+                                className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                                title="이미지 삭제"
+                              >
+                                <svg
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  className="h-4 w-4"
+                                  fill="none"
+                                  viewBox="0 0 24 24"
+                                  stroke="currentColor"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M6 18L18 6M6 6l12 12"
+                                  />
+                                </svg>
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* 이미지 업로드 버튼 */}
+                    <div className="mt-2">
+                      <input
+                        type="file"
+                        ref={fileInputRef}
+                        onChange={handleImageChange}
+                        multiple
+                        accept="image/*"
+                        className="hidden"
+                      />
+                      <button
+                        type="button"
+                        onClick={handleSelectFilesClick}
+                        className="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="h-4 w-4 mr-2"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0l-4 4m4-4v12"
+                          />
+                        </svg>
+                        이미지 추가
+                      </button>
+                      <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                        * 이미지는 AWS S3에 직접 업로드됩니다. (Presigned URL
+                        방식)
+                      </p>
+                    </div>
+
+                    {/* 업로드 진행 상황 */}
+                    {isUploading && (
+                      <div className="mt-4">
+                        <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
+                          <div
+                            className="bg-blue-600 h-2.5 rounded-full"
+                            style={{ width: `${uploadProgress}%` }}
+                          ></div>
+                        </div>
+                        <p className="text-xs text-center mt-1 text-gray-600 dark:text-gray-400">
+                          {uploadProgress}% 업로드 중...
+                        </p>
+                      </div>
+                    )}
                   </div>
 
                   <div className="flex items-center justify-end space-x-3">
