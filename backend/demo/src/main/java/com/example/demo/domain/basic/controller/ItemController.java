@@ -54,4 +54,10 @@ public class ItemController {
         ItemResponseDto updated = itemService.updateItem(id, requestDto);
         return ResponseEntity.ok(updated);
     }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<ItemResponseDto> deleteItem(@PathVariable Long id) {
+        ItemResponseDto item = itemService.deleteItem(id);
+        return ResponseEntity.ok(item);
+    }
 }

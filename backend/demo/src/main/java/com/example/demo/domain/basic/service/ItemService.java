@@ -10,6 +10,7 @@ import org.redisson.api.RedissonClient;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Set;
@@ -98,6 +99,7 @@ public class ItemService {
                 .orElseThrow(() -> new IllegalArgumentException("Item not found"));
     }
 
+    @Transactional
     public ItemResponseDto updateItem(Long id, ItemRequestDto dto) {
         Item item = itemRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Item not found"));
@@ -105,6 +107,17 @@ public class ItemService {
         Item updated = itemRepository.save(item);
         return toDto(updated);
     }
+
+    @Transactional
+    public ItemResponseDto deleteItem(Long id) {
+        ItemResponseDto deleteItemDto = itemRepository.findById(id)
+                .map(this::toDto)
+                .orElseThrow(() -> new IllegalArgumentException("Item not found"));
+
+        itemRepository.deleteById(deleteItemDto.getItemId());
+        return deleteItemDto;
+    }
+
 
     private ItemResponseDto toDto(Item item) {
         ItemResponseDto dto = new ItemResponseDto();
