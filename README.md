@@ -1,8 +1,9 @@
 # 🐳 Jaewoo's Fullstack CI/CD Project
 
-> GitHub Actions + Docker + EC2 + HTTPS 자동 배포까지 구현한 풀스택 프로젝트
+- **웹사이트**: [https://www.jaewoo.site](https://www.jaewoo.site)
+- **API 엔드포인트**: [https://www.jaewoo.site/api](https://www.jaewoo.site/api)
 
-![CI/CD 배포 상태](![image](https://github.com/user-attachments/assets/f1c9c667-e404-45ae-ad95-7ea59c355e8f))
+> GitHub Actions + Docker + EC2 + HTTPS 자동 배포까지 구현한 풀스택 프로젝트
 
 ## 📌 목차
 - [프로젝트 소개](#-프로젝트-소개)
