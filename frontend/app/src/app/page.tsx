@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 
 interface MainResponse {
   message: string;
@@ -42,9 +43,18 @@ export default function Home() {
       {/* Header */}
       <header className="py-6 px-4 sm:px-6 lg:px-8 border-b border-gray-200 dark:border-gray-700">
         <div className="max-w-5xl mx-auto flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-            API 대시보드
-          </h1>
+          <div className="flex items-center gap-3">
+            <Image
+              src="https://jaewoo-site-s3-bucket.s3.ap-northeast-2.amazonaws.com/logo.jpg"
+              alt="API 대시보드 로고"
+              width={40}
+              height={40}
+              className="rounded-md"
+            />
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+              API 대시보드
+            </h1>
+          </div>
           <nav>
             <Link
               href="/items"
