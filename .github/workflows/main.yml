@@ -21,6 +21,8 @@ jobs:
         echo "db.url=${{ secrets.SPRING_DATASOURCE_URL }}" > ./backend/demo/src/main/resources/application-secret.properties
         echo "db.username=${{ secrets.SPRING_DATASOURCE_USERNAME }}" >> ./backend/demo/src/main/resources/application-secret.properties
         echo "db.password=${{ secrets.SPRING_DATASOURCE_PASSWORD }}" >> ./backend/demo/src/main/resources/application-secret.properties
+        echo "redis.host=${{ secrets.REDIS_HOST }}" >> ./backend/demo/src/main/resources/application-secret.properties
+        echo "redis.port=${{ secrets.REDIS_PORT }}" >> ./backend/demo/src/main/resources/application-secret.properties
 
     # 백엔드 Gradle 빌드
     - name: Set up JDK 17
