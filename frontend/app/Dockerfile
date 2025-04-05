@@ -71,4 +71,4 @@ COPY --from=builder /app/tsconfig.json ./
 COPY --from=builder /app/next-env.d.ts ./
 
 # next start 대신 실행 명령어 변경
-CMD ["npm", "next", "start"]
+CMD ["npm", "start"]
