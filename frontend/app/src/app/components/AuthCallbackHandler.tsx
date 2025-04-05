@@ -25,7 +25,7 @@ function AuthCallbackHandlerInner() {
       }
 
       if (isNewUser) {
-        router.push("/user/profile-setup");
+        router.push("/nickname-registration");
       } else {
         const redirectUrl = localStorage.getItem("auth_redirect") || "/";
         localStorage.removeItem("auth_redirect");
