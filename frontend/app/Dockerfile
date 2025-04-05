@@ -45,17 +45,30 @@ WORKDIR /app
 
 ENV NODE_ENV production
 
-# 필요한 파일만 복사
+# package.json 및 의존성 복사
 COPY --from=builder /app/package.json ./
 COPY --from=builder /app/package-lock.json ./
+
+# next.config.ts 파일 복사
 COPY --from=builder /app/next.config.ts ./
-COPY --from=builder /app/next.config.js ./next.config.js
-COPY --from=builder /app/public ./public
+
+# 빌드 결과물 복사
 COPY --from=builder /app/.next ./.next
+COPY --from=builder /app/public ./public
+
+# node_modules 복사 (프로덕션 의존성)
 COPY --from=builder /app/node_modules ./node_modules
+
+# 환경변수 파일 복사
 COPY --from=builder /app/.env.production ./
 
 EXPOSE 3000
 
+# tsconfig.json 복사 (TS 설정 필요)
+COPY --from=builder /app/tsconfig.json ./
+
+# next-env.d.ts 복사 (TS 타입 정의 필요)
+COPY --from=builder /app/next-env.d.ts ./
+
 # next start 대신 실행 명령어 변경
-CMD ["npm", "start"]
+CMD ["npm", "next", "start"]
