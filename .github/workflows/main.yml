@@ -27,6 +27,10 @@ jobs:
         echo "aws.region.static=${{ secrets.S3_REGION_STATIC }}" >> ./backend/demo/src/main/resources/application-secret.properties
         echo "aws.credentials.access-key=${{ secrets.S3_ACCESS_KEY }}" >> ./backend/demo/src/main/resources/application-secret.properties
         echo "aws.credentials.secret-key=${{ secrets.S3_SECRET_KEY }}" >> ./backend/demo/src/main/resources/application-secret.properties
+        echo "jwt.secret.token=${{ secrets.JWT_SECRET_TOKEN }}" >> ./backend/demo/src/main/resources/application-secret.properties
+        echo "google.secret=${{ secrets.GOOGLE_SECRET }}" >> ./backend/demo/src/main/resources/application-secret.properties
+        echo "naver.secret=${{ secrets.NAVER_SECRET }}" >> ./backend/demo/src/main/resources/application-secret.properties
+        echo "kakao.secret=${{ secrets.KAKAO_SECRET }}" >> ./backend/demo/src/main/resources/application-secret.properties
 
     # 백엔드 Gradle 빌드
     - name: Set up JDK 17
