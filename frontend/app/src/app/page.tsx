@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 
 interface MainResponse {
   message: string;
@@ -10,9 +11,16 @@ interface MainResponse {
   timestamp: string;
 }
 
+interface UserInfo {
+  isLoggedIn: boolean;
+  role: string | null;
+}
+
 export default function Home() {
   const [data, setData] = useState<MainResponse | null>(null);
   const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState<UserInfo>({ isLoggedIn: false, role: null });
+  const router = useRouter();
 
   useEffect(() => {
     const fetchMessage = async () => {
@@ -38,6 +46,28 @@ export default function Home() {
     fetchMessage();
   }, []);
 
+  // 로그인 상태 확인
+  useEffect(() => {
+    // 로컬 스토리지에서 토큰과 역할 확인
+    const token = localStorage.getItem("auth_access_token");
+    const role = localStorage.getItem("auth_user_role");
+
+    if (token) {
+      setUser({ isLoggedIn: true, role });
+    } else {
+      setUser({ isLoggedIn: false, role: null });
+    }
+  }, []);
+
+  // 로그아웃 처리
+  const handleLogout = () => {
+    localStorage.removeItem("auth_access_token");
+    localStorage.removeItem("auth_refresh_token");
+    localStorage.removeItem("auth_user_role");
+    setUser({ isLoggedIn: false, role: null });
+    router.push("/");
+  };
+
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-white to-gray-50 dark:from-gray-900 dark:to-gray-800">
       {/* Header */}
@@ -55,13 +85,36 @@ export default function Home() {
               API 대시보드
             </h1>
           </div>
-          <nav>
+          <nav className="flex items-center gap-4">
             <Link
               href="/items"
               className="text-sm font-medium text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
             >
               아이템 목록
             </Link>
+
+            {user.isLoggedIn ? (
+              <div className="flex items-center gap-4">
+                {user.role === "ADMIN" && (
+                  <span className="px-2 py-1 text-xs font-semibold bg-red-100 text-red-800 rounded-md dark:bg-red-900 dark:text-red-200">
+                    관리자
+                  </span>
+                )}
+                <button
+                  onClick={handleLogout}
+                  className="text-sm font-medium text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
+                >
+                  로그아웃
+                </button>
+              </div>
+            ) : (
+              <Link
+                href="/login"
+                className="text-sm font-medium text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
+              >
+                로그인
+              </Link>
+            )}
           </nav>
         </div>
       </header>
@@ -157,8 +210,77 @@ export default function Home() {
                 </svg>
                 <span>새로고침</span>
               </button>
+
+              {!user.isLoggedIn && (
+                <Link
+                  href="/login"
+                  className="inline-flex items-center justify-center px-5 py-3 border border-transparent text-base font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-5 w-5 mr-2"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"
+                    />
+                  </svg>
+                  <span>로그인하기</span>
+                </Link>
+              )}
             </div>
           </section>
+
+          {/* 인증된 사용자를 위한 추가 섹션 */}
+          {user.isLoggedIn && (
+            <section className="mt-12">
+              <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 border border-gray-200 dark:border-gray-700">
+                <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
+                  {user.role === "ADMIN"
+                    ? "관리자 계정으로 로그인되었습니다"
+                    : "로그인되었습니다"}
+                </h2>
+                <p className="text-gray-600 dark:text-gray-300 mb-4">
+                  {user.role === "ADMIN"
+                    ? "관리자 권한으로 시스템의 모든 기능을 사용할 수 있습니다."
+                    : "시스템의 다양한 기능을 이용해보세요."}
+                </p>
+
+                {user.role === "ADMIN" && (
+                  <div className="mt-4">
+                    <h3 className="text-md font-medium text-gray-800 dark:text-gray-200 mb-2">
+                      관리자 기능
+                    </h3>
+                    <div className="flex flex-wrap gap-2">
+                      <Link
+                        href="/admin/dashboard"
+                        className="inline-flex items-center px-3 py-1.5 bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-md text-sm hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                      >
+                        관리자 대시보드
+                      </Link>
+                      <Link
+                        href="/admin/users"
+                        className="inline-flex items-center px-3 py-1.5 bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-md text-sm hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                      >
+                        사용자 관리
+                      </Link>
+                      <Link
+                        href="/admin/items"
+                        className="inline-flex items-center px-3 py-1.5 bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-md text-sm hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                      >
+                        아이템 관리
+                      </Link>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </section>
+          )}
         </div>
       </main>
 
