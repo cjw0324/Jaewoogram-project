@@ -18,21 +18,44 @@ COPY .env.production .env.production
 # 빌드
 RUN npm run build || echo "Build completed with lint warnings"
 
+# # 2. Production stage
+# FROM node:18.18.0-slim AS runner
+
+# WORKDIR /app
+
+# COPY --from=builder /app/package.json ./
+# COPY --from=builder /app/.next .next
+# COPY --from=builder /app/public ./public
+# COPY --from=builder /app/node_modules ./node_modules
+# COPY --from=builder /app/next.config.ts ./
+
+# # 실행 시에도 환경변수 파일 포함
+# COPY --from=builder /app/.env.production ./
+
+# EXPOSE 3000
+
+# ENV NODE_ENV production
+
+# CMD ["npm", "start"]
+
 # 2. Production stage
 FROM node:18.18.0-slim AS runner
 
 WORKDIR /app
 
-COPY --from=builder /app/package.json ./
-COPY --from=builder /app/.next .next
-COPY --from=builder /app/public ./public
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/next.config.ts ./
+ENV NODE_ENV production
 
-# 실행 시에도 환경변수 파일 포함
+# 필요한 파일만 복사
+COPY --from=builder /app/package.json ./
+COPY --from=builder /app/package-lock.json ./
+COPY --from=builder /app/next.config.ts ./
+COPY --from=builder /app/next.config.js ./next.config.js
+COPY --from=builder /app/public ./public
+COPY --from=builder /app/.next ./.next
+COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/.env.production ./
 
 EXPOSE 3000
-ENV NODE_ENV production
 
+# next start 대신 실행 명령어 변경
 CMD ["npm", "start"]
