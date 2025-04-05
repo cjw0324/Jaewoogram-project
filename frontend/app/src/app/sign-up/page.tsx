@@ -1,24 +1,20 @@
 "use client";
 
-// src/app/sign-up/page.tsx
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 
-export default function SignUpPage() {
+function SignUpContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // URL 쿼리 파라미터에서 정보 추출
     const accessToken = searchParams.get("accessToken");
     const refreshToken = searchParams.get("refreshToken");
     const isNewUser = searchParams.get("isNewUser") === "true";
     const userRole = searchParams.get("userRole");
 
-    // 토큰이 있으면 로컬 스토리지에 저장
     if (accessToken) {
-      // 토큰 저장
       localStorage.setItem("auth_access_token", accessToken);
 
       if (refreshToken) {
@@ -29,7 +25,6 @@ export default function SignUpPage() {
         localStorage.setItem("auth_user_role", userRole);
       }
 
-      // 신규 사용자가 아니라면 홈으로 리다이렉트
       if (!isNewUser) {
         setTimeout(() => {
           router.push("/");
@@ -65,5 +60,13 @@ export default function SignUpPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function SignUpPage() {
+  return (
+    <Suspense fallback={<div className="text-center mt-10">로딩 중...</div>}>
+      <SignUpContent />
+    </Suspense>
   );
 }

@@ -1,24 +1,21 @@
-// src/app/login/page.tsx
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useEffect, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import SocialLogin from "../components/SocialLogin";
 import { useAuth } from "../../lib/auth/AuthProvider";
 
-export default function LoginPage() {
+function LoginContent() {
   const { isAuthenticated, loading } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirect = searchParams.get("redirect");
 
   useEffect(() => {
-    // 이미 로그인된 경우 리다이렉트
     if (!loading && isAuthenticated) {
       router.push(redirect || "/");
     }
 
-    // 리다이렉트 URL이 있으면 로컬 스토리지에 저장
     if (redirect) {
       localStorage.setItem("auth_redirect", redirect);
     }
@@ -42,5 +39,13 @@ export default function LoginPage() {
         <SocialLogin />
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<div className="text-center mt-10">로딩 중...</div>}>
+      <LoginContent />
+    </Suspense>
   );
 }

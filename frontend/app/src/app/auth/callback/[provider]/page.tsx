@@ -1,12 +1,10 @@
-// src/app/auth/callback/[provider]/page.tsx
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, Suspense } from "react";
 import { useParams, useSearchParams, useRouter } from "next/navigation";
 import { useAuth } from "../../../../lib/auth/AuthProvider";
-import { oauthProviders } from "../../../lib/auth/oauthConfig";
 
-export default function OAuthCallbackPage() {
+function OAuthCallbackContent() {
   const params = useParams();
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -39,18 +37,14 @@ export default function OAuthCallbackPage() {
 
         if (response.ok) {
           const data = await response.json();
-          // 토큰 저장
           localStorage.setItem("auth_token", data.token);
           setStatus("success");
 
-          // 인증 상태 새로고침
           await checkAuthStatus();
 
-          // 리다이렉트 URL이 있으면 그쪽으로, 없으면 홈으로
           const redirectUrl = localStorage.getItem("auth_redirect") || "/";
-          localStorage.removeItem("auth_redirect"); // 사용 후 삭제
+          localStorage.removeItem("auth_redirect");
 
-          // 잠시 후 리다이렉트
           setTimeout(() => {
             router.push(redirectUrl);
           }, 1500);
@@ -132,5 +126,15 @@ export default function OAuthCallbackPage() {
         </>
       )}
     </div>
+  );
+}
+
+export default function OAuthCallbackPage() {
+  return (
+    <Suspense
+      fallback={<div className="text-center mt-10">로그인 처리 중...</div>}
+    >
+      <OAuthCallbackContent />
+    </Suspense>
   );
 }
