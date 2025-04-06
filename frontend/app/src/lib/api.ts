@@ -14,8 +14,37 @@ async function request<T>(
     headers: {
       "Content-Type": "application/json",
     },
+    credentials: "include", // 쿠키 자동 포함
     ...(body ? { body: JSON.stringify(body) } : {}),
   });
+
+  // 401 오류 시 토큰 재발급 시도
+  if (res.status === 401) {
+    try {
+      const refreshResponse = await fetch(`${API_BASE_URL}/auth/reissue`, {
+        method: "POST",
+        credentials: "include",
+      });
+
+      // 토큰 재발급 성공 시 원래 요청 재시도
+      if (refreshResponse.ok) {
+        const retryRes = await fetch(`${API_BASE_URL}${path}`, {
+          method,
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+          ...(body ? { body: JSON.stringify(body) } : {}),
+        });
+
+        if (retryRes.ok) {
+          return retryRes.json();
+        }
+      }
+    } catch (error) {
+      console.error("토큰 재발급 실패:", error);
+    }
+  }
 
   if (!res.ok) {
     const errorText = await res.text();

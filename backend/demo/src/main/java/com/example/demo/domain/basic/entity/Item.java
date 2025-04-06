@@ -27,4 +27,12 @@ public class Item {
         images.add(image);
         image.setItem(this);
     }
+
+    public void clearImages() {
+        for (ItemImage image : images) {
+            image.setItem(null);
+        }
+        images.clear();
+    }
+
 }

@@ -161,24 +161,58 @@ public class JwtProvider implements AuthenticationProvider {
         return userId;
     }
 
-    public String getAccessTokenFromHeader(HttpServletRequest request) {
+    public String getAccessTokenFromRequest(HttpServletRequest request) {
         Cookie[] cookies = request.getCookies();
         if (cookies != null) {
             for (Cookie cookie : cookies) {
-                if (cookie.getName().equalsIgnoreCase("access-token")) {
+                if (cookie.getName().equals("access-token")) {
                     return cookie.getValue();
                 }
             }
         }
 
+        // 예외적으로 Authorization 헤더도 허용
         String header = request.getHeader(AUTHORIZATION);
-        if (header != null) {
-            if (!header.toLowerCase().startsWith(BEARER)) {
-                throw new RuntimeException();
-            }
+        if (header != null && header.toLowerCase().startsWith(BEARER)) {
             return header.substring(7);
         }
 
         return null;
     }
+
+    public String getRefreshTokenFromRequest(HttpServletRequest request) {
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if (cookie.getName().equals("refresh-token")) {
+                    return cookie.getValue();
+                }
+            }
+        }
+        throw new RuntimeException("No refresh token in cookie");
+    }
+
+
+
+
+//    public String getAccessTokenFromHeader(HttpServletRequest request) {
+//        Cookie[] cookies = request.getCookies();
+//        if (cookies != null) {
+//            for (Cookie cookie : cookies) {
+//                if (cookie.getName().equalsIgnoreCase("access-token")) {
+//                    return cookie.getValue();
+//                }
+//            }
+//        }
+//
+//        String header = request.getHeader(AUTHORIZATION);
+//        if (header != null) {
+//            if (!header.toLowerCase().startsWith(BEARER)) {
+//                throw new RuntimeException();
+//            }
+//            return header.substring(7);
+//        }
+//
+//        return null;
+//    }
 }

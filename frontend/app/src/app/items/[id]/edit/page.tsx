@@ -4,6 +4,7 @@ import { useEffect, useState, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { ItemResponseDto } from "../../../types/item";
 import Link from "next/link";
+import ProtectedRoute from "@/components/ProtectedRoute";
 
 export default function EditItemPage() {
   const params = useParams();
@@ -32,8 +33,12 @@ export default function EditItemPage() {
       setLoading(true);
       try {
         const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_BASE_URL}/items/${id}`
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/items/${id}`,
+          {
+            credentials: "include", //쿠키 포함
+          }
         );
+
         if (!res.ok) {
           throw new Error("아이템을 불러오는데 실패했습니다");
         }
@@ -103,6 +108,7 @@ export default function EditItemPage() {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(fileRequests),
+          credentials: "include",
         }
       );
 
@@ -186,6 +192,7 @@ export default function EditItemPage() {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(updateData),
+          credentials: "include",
         }
       );
 
@@ -208,62 +215,62 @@ export default function EditItemPage() {
     }
   };
 
+  // 기존 이미지 순서 바꾸기
+  const swapExistingImages = (i: number, j: number) => {
+    const newImageUrls = [...imageUrls];
+    [newImageUrls[i], newImageUrls[j]] = [newImageUrls[j], newImageUrls[i]];
+    setImageUrls(newImageUrls);
+  };
+
+  // 새 이미지 순서 바꾸기
+  const swapNewImages = (i: number, j: number) => {
+    const newFiles = [...newImages];
+    const newUrls = [...previewUrls];
+
+    // 파일과 미리보기 URL 동시에 교환
+    [newFiles[i], newFiles[j]] = [newFiles[j], newFiles[i]];
+    [newUrls[i], newUrls[j]] = [newUrls[j], newUrls[i]];
+
+    setNewImages(newFiles);
+    setPreviewUrls(newUrls);
+  };
+
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-b from-white to-gray-50 dark:from-gray-900 dark:to-gray-800">
-      {/* Header */}
-      <header className="py-6 px-4 sm:px-6 lg:px-8 border-b border-gray-200 dark:border-gray-700">
-        <div className="max-w-5xl mx-auto flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-            <Link
-              href="/"
-              className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
-            >
-              API 대시보드
-            </Link>
-          </h1>
-          <nav>
-            <Link
-              href="/items"
-              className="text-sm font-medium text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
-            >
-              아이템 목록
-            </Link>
-          </nav>
-        </div>
-      </header>
-
-      {/* Main content */}
-      <main className="flex-1 py-12 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-2xl mx-auto">
-          <div className="mb-8">
-            <Link
-              href={`/items/${id}`}
-              className="inline-flex items-center text-sm font-medium text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-4 w-4 mr-1"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
+    <ProtectedRoute>
+      <div className="min-h-screen flex flex-col bg-gradient-to-b from-white to-gray-50 dark:from-gray-900 dark:to-gray-800">
+        {/* Header */}
+        <header className="py-6 px-4 sm:px-6 lg:px-8 border-b border-gray-200 dark:border-gray-700">
+          <div className="max-w-5xl mx-auto flex justify-between items-center">
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+              <Link
+                href="/"
+                className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M10 19l-7-7m0 0l7-7m-7 7h18"
-                />
-              </svg>
-              아이템 상세로 돌아가기
-            </Link>
+                API 대시보드
+              </Link>
+            </h1>
+            <nav>
+              <Link
+                href="/items"
+                className="text-sm font-medium text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
+              >
+                아이템 목록
+              </Link>
+            </nav>
           </div>
+        </header>
 
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden border border-gray-200 dark:border-gray-700">
-            <div className="p-6">
-              <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-6 flex items-center">
+        {/* Main content */}
+        <main className="flex-1 py-12 px-4 sm:px-6 lg:px-8">
+          <div className="max-w-2xl mx-auto">
+            <div className="mb-8">
+              <Link
+                href={`/items/${id}`}
+                className="inline-flex items-center text-sm font-medium text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
+              >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
-                  className="h-5 w-5 mr-2 text-blue-600 dark:text-blue-400"
+                  className="h-4 w-4 mr-1"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -272,254 +279,223 @@ export default function EditItemPage() {
                     strokeLinecap="round"
                     strokeLinejoin="round"
                     strokeWidth={2}
-                    d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                    d="M10 19l-7-7m0 0l7-7m-7 7h18"
                   />
                 </svg>
-                아이템 수정
-              </h2>
+                아이템 상세로 돌아가기
+              </Link>
+            </div>
 
-              {error && (
-                <div className="mb-6 bg-red-50 dark:bg-red-900/20 p-4 rounded-md border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300">
-                  <div className="flex items-center">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-5 w-5 mr-2"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-                      />
-                    </svg>
-                    {error}
-                  </div>
-                </div>
-              )}
-
-              {loading ? (
-                <div className="animate-pulse space-y-4">
-                  <div className="h-10 bg-gray-200 dark:bg-gray-700 rounded"></div>
-                  <div className="h-40 bg-gray-200 dark:bg-gray-700 rounded"></div>
-                  <div className="h-10 bg-gray-200 dark:bg-gray-700 rounded w-1/3"></div>
-                </div>
-              ) : (
-                <form onSubmit={handleUpdate} className="space-y-6">
-                  <div>
-                    <label
-                      htmlFor="itemName"
-                      className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
-                    >
-                      아이템 이름
-                    </label>
-                    <input
-                      id="itemName"
-                      type="text"
-                      value={itemName}
-                      onChange={(e) => setItemName(e.target.value)}
-                      className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
-                      placeholder="아이템 이름을 입력하세요"
-                      required
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden border border-gray-200 dark:border-gray-700">
+              <div className="p-6">
+                <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-6 flex items-center">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-5 w-5 mr-2 text-blue-600 dark:text-blue-400"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
                     />
-                    <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                      아이템 ID: {id}
-                    </p>
-                  </div>
+                  </svg>
+                  아이템 수정
+                </h2>
 
-                  {/* 이미지 섹션 */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      이미지
-                    </label>
-
-                    {/* 기존 이미지 미리보기 */}
-                    {imageUrls.length > 0 && (
-                      <div className="mb-4">
-                        <h4 className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-2">
-                          기존 이미지
-                        </h4>
-                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                          {imageUrls.map((url, index) => (
-                            <div
-                              key={`existing-${index}`}
-                              className="relative group border border-gray-200 dark:border-gray-700 rounded-md overflow-hidden"
-                            >
-                              <img
-                                src={url}
-                                alt={`아이템 이미지 ${index + 1}`}
-                                className="w-full h-24 object-cover"
-                              />
-                              <button
-                                type="button"
-                                onClick={() => handleRemoveExistingImage(index)}
-                                className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
-                                title="이미지 삭제"
-                              >
-                                <svg
-                                  xmlns="http://www.w3.org/2000/svg"
-                                  className="h-4 w-4"
-                                  fill="none"
-                                  viewBox="0 0 24 24"
-                                  stroke="currentColor"
-                                >
-                                  <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M6 18L18 6M6 6l12 12"
-                                  />
-                                </svg>
-                              </button>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* 새 이미지 미리보기 */}
-                    {previewUrls.length > 0 && (
-                      <div className="mb-4">
-                        <h4 className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-2">
-                          새 이미지
-                        </h4>
-                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                          {previewUrls.map((url, index) => (
-                            <div
-                              key={`new-${index}`}
-                              className="relative group border border-gray-200 dark:border-gray-700 rounded-md overflow-hidden"
-                            >
-                              <img
-                                src={url}
-                                alt={`새 이미지 ${index + 1}`}
-                                className="w-full h-24 object-cover"
-                              />
-                              <div className="absolute bottom-0 left-0 right-0 bg-blue-500 text-white text-xs px-2 py-1">
-                                새 이미지
-                              </div>
-                              <button
-                                type="button"
-                                onClick={() => handleRemoveNewImage(index)}
-                                className="absolute top-1 right-1 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
-                                title="이미지 삭제"
-                              >
-                                <svg
-                                  xmlns="http://www.w3.org/2000/svg"
-                                  className="h-4 w-4"
-                                  fill="none"
-                                  viewBox="0 0 24 24"
-                                  stroke="currentColor"
-                                >
-                                  <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M6 18L18 6M6 6l12 12"
-                                  />
-                                </svg>
-                              </button>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* 이미지 업로드 버튼 */}
-                    <div className="mt-2">
-                      <input
-                        type="file"
-                        ref={fileInputRef}
-                        onChange={handleImageChange}
-                        multiple
-                        accept="image/*"
-                        className="hidden"
-                      />
-                      <button
-                        type="button"
-                        onClick={handleSelectFilesClick}
-                        className="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                {error && (
+                  <div className="mb-6 bg-red-50 dark:bg-red-900/20 p-4 rounded-md border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300">
+                    <div className="flex items-center">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-5 w-5 mr-2"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
                       >
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          className="h-4 w-4 mr-2"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0l-4 4m4-4v12"
-                          />
-                        </svg>
-                        이미지 추가
-                      </button>
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                        />
+                      </svg>
+                      {error}
+                    </div>
+                  </div>
+                )}
+
+                {loading ? (
+                  <div className="animate-pulse space-y-4">
+                    <div className="h-10 bg-gray-200 dark:bg-gray-700 rounded"></div>
+                    <div className="h-40 bg-gray-200 dark:bg-gray-700 rounded"></div>
+                    <div className="h-10 bg-gray-200 dark:bg-gray-700 rounded w-1/3"></div>
+                  </div>
+                ) : (
+                  <form onSubmit={handleUpdate} className="space-y-6">
+                    <div>
+                      <label
+                        htmlFor="itemName"
+                        className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                      >
+                        아이템 이름
+                      </label>
+                      <input
+                        id="itemName"
+                        type="text"
+                        value={itemName}
+                        onChange={(e) => setItemName(e.target.value)}
+                        className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+                        placeholder="아이템 이름을 입력하세요"
+                        required
+                      />
                       <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                        * 이미지는 AWS S3에 직접 업로드됩니다. (Presigned URL
-                        방식)
+                        아이템 ID: {id}
                       </p>
                     </div>
 
-                    {/* 업로드 진행 상황 */}
-                    {isUploading && (
-                      <div className="mt-4">
-                        <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
-                          <div
-                            className="bg-blue-600 h-2.5 rounded-full"
-                            style={{ width: `${uploadProgress}%` }}
-                          ></div>
-                        </div>
-                        <p className="text-xs text-center mt-1 text-gray-600 dark:text-gray-400">
-                          {uploadProgress}% 업로드 중...
-                        </p>
-                      </div>
-                    )}
-                  </div>
+                    {/* 이미지 섹션 */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        이미지
+                      </label>
 
-                  <div className="flex items-center justify-end space-x-3">
-                    <Link
-                      href={`/items/${id}`}
-                      className="inline-flex items-center justify-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
-                    >
-                      취소
-                    </Link>
-                    <button
-                      type="submit"
-                      disabled={saving || !itemName.trim()}
-                      className="inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-70 transition-colors"
-                    >
-                      {saving ? (
-                        <>
+                      {/* 기존 이미지 미리보기 */}
+                      {imageUrls.length > 0 && (
+                        <div className="mb-4">
+                          <h4 className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-2">
+                            기존 이미지
+                          </h4>
+                          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                            {imageUrls.map((url, index) => (
+                              <div
+                                key={`existing-${index}`}
+                                className="relative group border border-gray-200 dark:border-gray-700 rounded-md overflow-hidden"
+                              >
+                                <img
+                                  src={url}
+                                  alt={`아이템 이미지 ${index + 1}`}
+                                  className="w-full h-24 object-cover"
+                                />
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    handleRemoveExistingImage(index)
+                                  }
+                                  className="absolute top-1 right-1 bg-red-500 text-white rounded-full px-2 py-1 text-xs hover:bg-red-600"
+                                >
+                                  ×
+                                </button>
+                                {/* 순서 이동 */}
+                                <div className="absolute bottom-1 left-1 flex gap-1">
+                                  {index > 0 && (
+                                    <button
+                                      type="button"
+                                      onClick={() =>
+                                        swapExistingImages(index, index - 1)
+                                      }
+                                      className="bg-gray-700 text-white text-xs px-2 py-1 rounded hover:bg-gray-600"
+                                    >
+                                      ←
+                                    </button>
+                                  )}
+                                  {index < imageUrls.length - 1 && (
+                                    <button
+                                      type="button"
+                                      onClick={() =>
+                                        swapExistingImages(index, index + 1)
+                                      }
+                                      className="bg-gray-700 text-white text-xs px-2 py-1 rounded hover:bg-gray-600"
+                                    >
+                                      →
+                                    </button>
+                                  )}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* 새 이미지 미리보기 */}
+                      {previewUrls.length > 0 && (
+                        <div className="mb-4">
+                          <h4 className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-2">
+                            새 이미지
+                          </h4>
+                          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                            {previewUrls.map((url, index) => (
+                              <div
+                                key={`new-${index}`}
+                                className="relative group border border-gray-200 dark:border-gray-700 rounded-md overflow-hidden"
+                              >
+                                <img
+                                  src={url}
+                                  alt={`새 이미지 ${index + 1}`}
+                                  className="w-full h-24 object-cover"
+                                />
+                                <div className="absolute bottom-0 left-0 right-0 bg-blue-500 text-white text-xs px-2 py-1">
+                                  새 이미지
+                                </div>
+                                <button
+                                  type="button"
+                                  onClick={() => handleRemoveNewImage(index)}
+                                  className="absolute top-1 right-1 bg-red-500 text-white rounded-full px-2 py-1 text-xs hover:bg-red-600"
+                                >
+                                  ×
+                                </button>
+                                {/* 순서 이동 */}
+                                <div className="absolute bottom-1 left-1 flex gap-1">
+                                  {index > 0 && (
+                                    <button
+                                      type="button"
+                                      onClick={() =>
+                                        swapNewImages(index, index - 1)
+                                      }
+                                      className="bg-gray-700 text-white text-xs px-2 py-1 rounded hover:bg-gray-600"
+                                    >
+                                      ←
+                                    </button>
+                                  )}
+                                  {index < previewUrls.length - 1 && (
+                                    <button
+                                      type="button"
+                                      onClick={() =>
+                                        swapNewImages(index, index + 1)
+                                      }
+                                      className="bg-gray-700 text-white text-xs px-2 py-1 rounded hover:bg-gray-600"
+                                    >
+                                      →
+                                    </button>
+                                  )}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* 이미지 업로드 버튼 */}
+                      <div className="mt-2">
+                        <input
+                          type="file"
+                          ref={fileInputRef}
+                          onChange={handleImageChange}
+                          multiple
+                          accept="image/*"
+                          className="hidden"
+                        />
+                        <button
+                          type="button"
+                          onClick={handleSelectFilesClick}
+                          className="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                        >
                           <svg
-                            className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
                             xmlns="http://www.w3.org/2000/svg"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                          >
-                            <circle
-                              className="opacity-25"
-                              cx="12"
-                              cy="12"
-                              r="10"
-                              stroke="currentColor"
-                              strokeWidth="4"
-                            ></circle>
-                            <path
-                              className="opacity-75"
-                              fill="currentColor"
-                              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                            ></path>
-                          </svg>
-                          저장 중...
-                        </>
-                      ) : (
-                        <>
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            className="h-4 w-4 mr-1"
+                            className="h-4 w-4 mr-2"
                             fill="none"
                             viewBox="0 0 24 24"
                             stroke="currentColor"
@@ -528,82 +504,159 @@ export default function EditItemPage() {
                               strokeLinecap="round"
                               strokeLinejoin="round"
                               strokeWidth={2}
-                              d="M5 13l4 4L19 7"
+                              d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0l-4 4m4-4v12"
                             />
                           </svg>
-                          수정 완료
-                        </>
+                          이미지 추가
+                        </button>
+                        <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                          * 이미지는 AWS S3에 직접 업로드됩니다. (Presigned URL
+                          방식)
+                        </p>
+                      </div>
+
+                      {/* 업로드 진행 상황 */}
+                      {isUploading && (
+                        <div className="mt-4">
+                          <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
+                            <div
+                              className="bg-blue-600 h-2.5 rounded-full"
+                              style={{ width: `${uploadProgress}%` }}
+                            ></div>
+                          </div>
+                          <p className="text-xs text-center mt-1 text-gray-600 dark:text-gray-400">
+                            {uploadProgress}% 업로드 중...
+                          </p>
+                        </div>
                       )}
-                    </button>
-                  </div>
-                </form>
-              )}
+                    </div>
+
+                    <div className="flex items-center justify-end space-x-3">
+                      <Link
+                        href={`/items/${id}`}
+                        className="inline-flex items-center justify-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
+                      >
+                        취소
+                      </Link>
+                      <button
+                        type="submit"
+                        disabled={saving || !itemName.trim()}
+                        className="inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-70 transition-colors"
+                      >
+                        {saving ? (
+                          <>
+                            <svg
+                              className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+                              xmlns="http://www.w3.org/2000/svg"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                            >
+                              <circle
+                                className="opacity-25"
+                                cx="12"
+                                cy="12"
+                                r="10"
+                                stroke="currentColor"
+                                strokeWidth="4"
+                              ></circle>
+                              <path
+                                className="opacity-75"
+                                fill="currentColor"
+                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                              ></path>
+                            </svg>
+                            저장 중...
+                          </>
+                        ) : (
+                          <>
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              className="h-4 w-4 mr-1"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M5 13l4 4L19 7"
+                              />
+                            </svg>
+                            수정 완료
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  </form>
+                )}
+              </div>
+            </div>
+
+            <div className="mt-8 bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 border border-gray-200 dark:border-gray-700">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                관련 작업
+              </h3>
+              <div className="flex flex-col sm:flex-row gap-3">
+                <Link
+                  href={`/items/${id}`}
+                  className="inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-4 w-4 mr-1"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                    />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                    />
+                  </svg>
+                  아이템 상세보기
+                </Link>
+
+                <Link
+                  href="/items"
+                  className="inline-flex items-center justify-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-4 w-4 mr-1"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M4 6h16M4 10h16M4 14h16M4 18h16"
+                    />
+                  </svg>
+                  아이템 목록으로
+                </Link>
+              </div>
             </div>
           </div>
+        </main>
 
-          <div className="mt-8 bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 border border-gray-200 dark:border-gray-700">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-              관련 작업
-            </h3>
-            <div className="flex flex-col sm:flex-row gap-3">
-              <Link
-                href={`/items/${id}`}
-                className="inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-4 w-4 mr-1"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                  />
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                  />
-                </svg>
-                아이템 상세보기
-              </Link>
-
-              <Link
-                href="/items"
-                className="inline-flex items-center justify-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-4 w-4 mr-1"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M4 6h16M4 10h16M4 14h16M4 18h16"
-                  />
-                </svg>
-                아이템 목록으로
-              </Link>
-            </div>
+        {/* Footer */}
+        <footer className="py-6 px-4 sm:px-6 lg:px-8 border-t border-gray-200 dark:border-gray-700">
+          <div className="max-w-5xl mx-auto text-center text-sm text-gray-500 dark:text-gray-400">
+            © {new Date().getFullYear()} API 대시보드. 모든 권리 보유.
           </div>
-        </div>
-      </main>
-
-      {/* Footer */}
-      <footer className="py-6 px-4 sm:px-6 lg:px-8 border-t border-gray-200 dark:border-gray-700">
-        <div className="max-w-5xl mx-auto text-center text-sm text-gray-500 dark:text-gray-400">
-          © {new Date().getFullYear()} API 대시보드. 모든 권리 보유.
-        </div>
-      </footer>
-    </div>
+        </footer>
+      </div>
+    </ProtectedRoute>
   );
 }

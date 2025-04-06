@@ -11,6 +11,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 @RequiredArgsConstructor
@@ -30,18 +31,23 @@ public class WebSecurityConfig {
         return new JwtAuthEntryPoint();
     }
 
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .cors(Customizer.withDefaults()) // WebConfig에 설정한 CORS 사용
-                .csrf(csrf -> csrf.disable()) // CSRF 비활성화 (API 서버에선 보통 disable)
+                .cors(Customizer.withDefaults())
+                .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .anyRequest().permitAll() // 모든 요청 허용
+                        .requestMatchers("/","/oauth2/**", "/login/**", "/auth/reissue", "/auth/logout", "/api/s3/**").permitAll()
+                        .anyRequest().authenticated()
                 )
-                .oauth2Login(oauth ->
-                        oauth.userInfoEndpoint(c -> c.userService(oAuth2UserService))
-                                .successHandler(oAuth2SuccessHandler)
-                );
+                .oauth2Login(oauth -> {
+                    oauth.userInfoEndpoint(userInfo -> userInfo.userService(oAuth2UserService));
+                    oauth.successHandler(oAuth2SuccessHandler);
+                })
+                .exceptionHandling(e -> e.authenticationEntryPoint(jwtAuthEntryPoint()));
+
+        http.addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }

@@ -13,12 +13,12 @@ import java.time.format.DateTimeFormatter;
 @RequestMapping("/")
 public class MainController {
 
-    private static final String version = "v1.0.4";
+    private static final String version = "v2.0.1";
 
-    @GetMapping("/")
+    @GetMapping
     public ResponseEntity<MainResponseDto> mainIndex() {
         MainResponseDto response = new MainResponseDto(
-                "HELLO JAE WOO CI / CD with Github Action, Docker",
+                "HELLO JAE WOO CI / CD with Github Action, Docker, Oauth2.0, JWT, ElastiCache Redis, RDS MySQL, EC2, S3",
                 version,
                 LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
         );
