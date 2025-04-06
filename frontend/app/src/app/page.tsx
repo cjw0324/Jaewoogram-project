@@ -133,3 +133,4 @@ export default function HomePage() {
     </div>
   );
 }
+export const dynamic = "force-dynamic";

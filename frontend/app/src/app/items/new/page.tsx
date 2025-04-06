@@ -276,3 +276,4 @@ export default function NewItemPage() {
     </ProtectedRoute>
   );
 }
+export const dynamic = "force-dynamic";

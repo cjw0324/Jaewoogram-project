@@ -129,3 +129,4 @@ export default function NicknameRegistrationPage() {
     </div>
   );
 }
+export const dynamic = "force-dynamic";

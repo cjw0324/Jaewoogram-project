@@ -116,3 +116,4 @@ export default function SignUpPage() {
     </div>
   );
 }
+export const dynamic = "force-dynamic";
