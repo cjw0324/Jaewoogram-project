@@ -1,9 +1,10 @@
 // src/app/login/page.tsx
 "use client";
 
-import React from "react";
+import React, { Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Image from "next/image";
+import SearchParamHandler from "@/components/SearchParamHandler";
 
 // 소셜 로그인 제공자 타입
 type Provider = "google" | "naver" | "kakao";
@@ -106,6 +107,10 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-lg shadow-md">
+        <Suspense fallback={null}>
+          <SearchParamHandler />
+        </Suspense>
+
         <div>
           <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
             로그인
@@ -120,7 +125,6 @@ export default function LoginPage() {
           <SocialLoginButton provider="naver" text="네이버로 로그인" />
           <SocialLoginButton provider="kakao" text="카카오로 로그인" />
 
-          {/* 비회원 이용하기 버튼 추가 */}
           <button
             onClick={handleGuestAccess}
             className="w-full py-3 px-4 rounded-md bg-gray-200 text-gray-800 hover:bg-gray-300 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
