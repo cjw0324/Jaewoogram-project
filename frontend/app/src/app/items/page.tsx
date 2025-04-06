@@ -291,4 +291,3 @@ export default function ItemListPage() {
     </ProtectedRoute>
   );
 }
-export const dynamic = "force-dynamic";

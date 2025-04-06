@@ -83,5 +83,3 @@ export default function AuthCallbackHandler() {
     </div>
   );
 }
-
-export const dynamic = "force-dynamic";

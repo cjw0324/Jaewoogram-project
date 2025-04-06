@@ -302,4 +302,3 @@ export default function ItemDetailPage() {
     </ProtectedRoute>
   );
 }
-export const dynamic = "force-dynamic";

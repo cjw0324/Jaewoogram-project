@@ -660,4 +660,3 @@ export default function EditItemPage() {
     </ProtectedRoute>
   );
 }
-export const dynamic = "force-dynamic";
