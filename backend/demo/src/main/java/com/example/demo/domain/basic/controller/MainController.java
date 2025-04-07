@@ -13,7 +13,7 @@ import java.time.format.DateTimeFormatter;
 @RequestMapping("/")
 public class MainController {
 
-    private static final String version = "v2.0.1";
+    private static final String version = "v3.0.1";
 
     @GetMapping
     public ResponseEntity<MainResponseDto> mainIndex() {
