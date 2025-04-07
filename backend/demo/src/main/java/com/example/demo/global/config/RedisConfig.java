@@ -1,4 +1,4 @@
-package com.example.demo.global;
+package com.example.demo.global.config;
 
 import org.redisson.Redisson;
 import org.redisson.api.RedissonClient;

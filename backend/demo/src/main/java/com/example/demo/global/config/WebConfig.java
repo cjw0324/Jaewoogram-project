@@ -1,4 +1,4 @@
-package com.example.demo.global;
+package com.example.demo.global.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

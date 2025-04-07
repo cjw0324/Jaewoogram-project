@@ -1,4 +1,4 @@
-package com.example.demo.global;
+package com.example.demo.global.config;
 
 import com.example.demo.global.auth.jwt.JwtAuthEntryPoint;
 import com.example.demo.global.auth.jwt.JwtAuthenticationFilter;
@@ -38,7 +38,7 @@ public class WebSecurityConfig {
                 .cors(Customizer.withDefaults())
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/","/oauth2/**", "/login/**", "/auth/reissue", "/auth/logout", "/api/s3/**", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
+                        .requestMatchers("/","/oauth2/**", "/login/**", "/auth/reissue", "/auth/logout", "/api/s3/**", "/swagger-ui/**", "/v3/api-docs/**", "https://univcert.com/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .oauth2Login(oauth -> {

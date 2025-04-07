@@ -1,11 +1,11 @@
-package com.example.demo.domain.basic.service;
+package com.example.demo.domain.item.service;
 
-import com.example.demo.domain.basic.dto.ItemCreateRequest;
-import com.example.demo.domain.basic.dto.ItemRequestDto;
-import com.example.demo.domain.basic.dto.ItemResponseDto;
-import com.example.demo.domain.basic.entity.Item;
-import com.example.demo.domain.basic.entity.ItemImage;
-import com.example.demo.domain.basic.repository.ItemRepository;
+import com.example.demo.domain.item.controller.dto.ItemCreateRequest;
+import com.example.demo.domain.item.controller.dto.ItemRequestDto;
+import com.example.demo.domain.item.controller.dto.ItemResponseDto;
+import com.example.demo.domain.item.entity.Item;
+import com.example.demo.domain.item.entity.ItemImage;
+import com.example.demo.domain.item.repository.ItemRepository;
 import lombok.RequiredArgsConstructor;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;

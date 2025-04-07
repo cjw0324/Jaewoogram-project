@@ -1,4 +1,4 @@
-package com.example.demo.domain.basic.controller;
+package com.example.demo.domain.item.controller;
 
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.GeneratePresignedUrlRequest;

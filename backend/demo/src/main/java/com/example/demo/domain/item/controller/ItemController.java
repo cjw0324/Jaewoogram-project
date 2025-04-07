@@ -1,10 +1,9 @@
-package com.example.demo.domain.basic.controller;
+package com.example.demo.domain.item.controller;
 
-import com.example.demo.domain.basic.dto.ItemCreateRequest;
-import com.example.demo.domain.basic.dto.ItemRequestDto;
-import com.example.demo.domain.basic.dto.ItemResponseDto;
-import com.example.demo.domain.basic.service.ItemService;
-import com.example.demo.global.auth.jwt.JwtAuthentication;
+import com.example.demo.domain.item.controller.dto.ItemCreateRequest;
+import com.example.demo.domain.item.controller.dto.ItemRequestDto;
+import com.example.demo.domain.item.controller.dto.ItemResponseDto;
+import com.example.demo.domain.item.service.ItemService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
