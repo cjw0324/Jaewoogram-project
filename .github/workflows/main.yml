@@ -18,9 +18,7 @@ jobs:
     # 백엔드 빌드 전에 application-secret.properties 파일 생성
     - name: Create application-secret.properties
       run: |
-        cat <<EOF > ./backend/demo/src/main/resources/application-secret.properties
-        ${{ secrets.SPRING_APPLICATION_SECRET_PROPERTIES }}
-        EOF
+        echo "${{ secrets.SPRING_APPLICATION_SECRET_PROPERTIES }}" | sed 's/\\n/\n/g' > ./backend/src/main/resources/application-secret.properties
 
     # 백엔드 Gradle 빌드
     - name: Set up JDK 17
