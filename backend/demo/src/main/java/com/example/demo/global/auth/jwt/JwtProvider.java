@@ -54,7 +54,10 @@ public class JwtProvider implements AuthenticationProvider {
         Long userId = Long.parseLong((String) body.get("userId"));
         UserRole userRole = UserRole.of((String) body.get("userRole"));
 
-        return new JwtAuthentication(userId, userRole);
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("user not found"));
+
+        return new JwtAuthentication(userId, user.getNickname(), userRole);
     }
 
     @Override
@@ -192,27 +195,4 @@ public class JwtProvider implements AuthenticationProvider {
         throw new RuntimeException("No refresh token in cookie");
     }
 
-
-
-
-//    public String getAccessTokenFromHeader(HttpServletRequest request) {
-//        Cookie[] cookies = request.getCookies();
-//        if (cookies != null) {
-//            for (Cookie cookie : cookies) {
-//                if (cookie.getName().equalsIgnoreCase("access-token")) {
-//                    return cookie.getValue();
-//                }
-//            }
-//        }
-//
-//        String header = request.getHeader(AUTHORIZATION);
-//        if (header != null) {
-//            if (!header.toLowerCase().startsWith(BEARER)) {
-//                throw new RuntimeException();
-//            }
-//            return header.substring(7);
-//        }
-//
-//        return null;
-//    }
 }

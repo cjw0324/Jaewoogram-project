@@ -57,6 +57,12 @@ dependencies {
 	// Resilience4j core + circuitbreaker
 	implementation 'io.github.resilience4j:resilience4j-spring-boot3:2.1.0'
 	implementation 'io.github.resilience4j:resilience4j-circuitbreaker:2.1.0'
+
+	// kafka
+	implementation 'org.springframework.kafka:spring-kafka'
+
+	// web socket
+	implementation 'org.springframework.boot:spring-boot-starter-websocket'
 }
 
 tasks.named('test') {

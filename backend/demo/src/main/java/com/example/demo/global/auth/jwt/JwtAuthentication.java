@@ -12,8 +12,13 @@ import java.util.Collection;
 
 @AllArgsConstructor
 public class JwtAuthentication implements Authentication {
+
     @Getter
     private Long userId;
+
+    @Getter
+    private String nickname;
+
     private UserRole userRole;
 
     @Override
@@ -52,7 +57,7 @@ public class JwtAuthentication implements Authentication {
 
     @Override
     public String getName() {
-        return null;
+        return nickname;
     }
 
 }
