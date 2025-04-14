@@ -2,9 +2,9 @@ name: CI/CD using github actions & docker
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "deploy" ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ "deploy" ]
 
 jobs:
   build:
@@ -18,20 +18,7 @@ jobs:
     # 백엔드 빌드 전에 application-secret.properties 파일 생성
     - name: Create application-secret.properties
       run: |
-        echo "db.url=${{ secrets.SPRING_DATASOURCE_URL }}" > ./backend/demo/src/main/resources/application-secret.properties
-        echo "db.username=${{ secrets.SPRING_DATASOURCE_USERNAME }}" >> ./backend/demo/src/main/resources/application-secret.properties
-        echo "db.password=${{ secrets.SPRING_DATASOURCE_PASSWORD }}" >> ./backend/demo/src/main/resources/application-secret.properties
-        echo "redis.host=${{ secrets.REDIS_HOST }}" >> ./backend/demo/src/main/resources/application-secret.properties
-        echo "redis.port=${{ secrets.REDIS_PORT }}" >> ./backend/demo/src/main/resources/application-secret.properties
-        echo "aws.s3.bucket=${{ secrets.S3_BUCKET_NAME }}" >> ./backend/demo/src/main/resources/application-secret.properties
-        echo "aws.region.static=${{ secrets.S3_REGION_STATIC }}" >> ./backend/demo/src/main/resources/application-secret.properties
-        echo "aws.credentials.access-key=${{ secrets.S3_ACCESS_KEY }}" >> ./backend/demo/src/main/resources/application-secret.properties
-        echo "aws.credentials.secret-key=${{ secrets.S3_SECRET_KEY }}" >> ./backend/demo/src/main/resources/application-secret.properties
-        echo "jwt.secret.token=${{ secrets.JWT_SECRET_TOKEN }}" >> ./backend/demo/src/main/resources/application-secret.properties
-        echo "google.secret=${{ secrets.GOOGLE_SECRET }}" >> ./backend/demo/src/main/resources/application-secret.properties
-        echo "naver.secret=${{ secrets.NAVER_SECRET }}" >> ./backend/demo/src/main/resources/application-secret.properties
-        echo "kakao.secret=${{ secrets.KAKAO_SECRET }}" >> ./backend/demo/src/main/resources/application-secret.properties
-        echo "univ.api.key=${{ secrets.UNIV_KEY }}" >> ./backend/demo/src/main/resources/application-secret.properties
+        echo "${{ secrets.BACKEND_SECRET_PROPERTIES }}" > ./backend/src/main/resources/application-secret.properties
         
 
     # 백엔드 Gradle 빌드
