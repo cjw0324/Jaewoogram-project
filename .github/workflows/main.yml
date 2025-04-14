@@ -19,7 +19,7 @@ jobs:
     - name: Create application-secret.properties
       run: |
         mkdir -p ./backend/demo/src/main/resources
-        echo "${{ secrets.BACKEND_SECRET_PROPERTIES }}" > ./backend/demo/src/main/resources/application-secret.properties
+        printf "%s" "${{ secrets.BACKEND_SECRET_PROPERTIES }}" > ./backend/demo/src/main/resources/application-secret.properties
         
 
     # 백엔드 Gradle 빌드
