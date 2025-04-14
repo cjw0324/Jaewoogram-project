@@ -18,8 +18,8 @@ jobs:
     # 백엔드 빌드 전에 application-secret.properties 파일 생성
     - name: Create application-secret.properties
       run: |
-        mkdir -p ./backend/src/main/resources
-        echo "${{ secrets.BACKEND_SECRET_PROPERTIES }}" > ./backend/src/main/resources/application-secret.properties
+        mkdir -p ./backend/demo/src/main/resources
+        echo "${{ secrets.BACKEND_SECRET_PROPERTIES }}" > ./backend/demo/src/main/resources/application-secret.properties
         
 
     # 백엔드 Gradle 빌드
