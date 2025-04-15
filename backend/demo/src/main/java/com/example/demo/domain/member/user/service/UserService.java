@@ -1,23 +1,25 @@
 package com.example.demo.domain.member.user.service;
 
-import com.example.demo.domain.member.follow.controller.dto.FollowResponseDto;
-import com.example.demo.domain.member.follow.controller.dto.UserDto;
+import com.example.demo.domain.member.user.controller.dto.UserDto;
 import com.example.demo.domain.member.follow.repository.FollowRepository;
 import com.example.demo.domain.member.user.controller.dto.NicknameRequestDto;
 import com.example.demo.domain.member.user.controller.dto.UserProfileDto;
 import com.example.demo.domain.member.user.controller.dto.UserResponseDto;
 import com.example.demo.domain.member.user.entity.User;
+import com.example.demo.domain.member.user.repository.UserMongoRepository;
 import com.example.demo.domain.member.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.regex.Pattern;
 
 @Service
 @RequiredArgsConstructor
 public class UserService {
     private final UserRepository userRepository;
+    private final UserMongoRepository userMongoRepository;
     private final FollowRepository followRepository;
 
     @Transactional
@@ -35,8 +37,17 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
-    public List<UserDto> searchByNickname(String keyword) {
+    public List<UserDto> searchByNickname_MySQL(String keyword) {
         return userRepository.findByNicknameContainingIgnoreCase(keyword).stream()
+                .map(UserDto::from)
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<UserDto> searchByNickname_Mongo(String keyword) {
+        String lower = keyword.toLowerCase();
+        return userMongoRepository.findByNicknameContaining(lower)
+                .stream()
                 .map(UserDto::from)
                 .toList();
     }

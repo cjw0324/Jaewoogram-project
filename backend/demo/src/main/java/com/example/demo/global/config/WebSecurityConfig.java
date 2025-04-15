@@ -44,7 +44,8 @@ public class WebSecurityConfig {
                                 "/api/swagger-ui/**", "/api/v3/api-docs/**",
                                 "/api/v3/api-docs/swagger-config",
                                 "/v3/api-docs/swagger-config",
-                                "/ws/**"
+                                "/ws/**",
+                                "/user/test/**"
                                 ).permitAll()
                         .anyRequest().authenticated()
                 )

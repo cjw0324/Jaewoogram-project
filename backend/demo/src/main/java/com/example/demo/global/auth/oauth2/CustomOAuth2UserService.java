@@ -2,6 +2,8 @@ package com.example.demo.global.auth.oauth2;
 
 
 import com.example.demo.domain.member.user.entity.User;
+import com.example.demo.domain.member.user.entity.UserDocument;
+import com.example.demo.domain.member.user.repository.UserMongoRepository;
 import com.example.demo.domain.member.user.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.Getter;
@@ -19,6 +21,8 @@ import java.util.Map;
 public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
     private final UserRepository userRepository;
+    private final UserMongoRepository userMongoRepository;
+
     @Getter
     private User user;
     @Getter
@@ -55,7 +59,12 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         } else {
             isNewUser = true;
             user = userRepository.save(oAuth2UserInfo.toEntity());
+            syncWithMongo(user);
         }
+    }
+
+    private void syncWithMongo(User user) {
+        userMongoRepository.save(UserDocument.from(user));
     }
 
 }

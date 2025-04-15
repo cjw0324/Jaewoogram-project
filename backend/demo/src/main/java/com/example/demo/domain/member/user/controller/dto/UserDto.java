@@ -1,7 +1,7 @@
-package com.example.demo.domain.member.follow.controller.dto;
+package com.example.demo.domain.member.user.controller.dto;
 
 import com.example.demo.domain.member.user.entity.User;
-import lombok.AllArgsConstructor;
+import com.example.demo.domain.member.user.entity.UserDocument;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -19,5 +19,9 @@ public class UserDto {
 
     public static UserDto from(User user) {
         return new UserDto(user.getId(), user.getNickname());
+    }
+
+    public static UserDto from(UserDocument doc) {
+        return new UserDto(Long.parseLong(doc.getId()), doc.getNickname());
     }
 }

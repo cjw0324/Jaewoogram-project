@@ -3,6 +3,7 @@ package com.example.demo.domain.member.follow.service;
 import com.example.demo.domain.member.follow.controller.dto.*;
 import com.example.demo.domain.member.follow.entity.Follow;
 import com.example.demo.domain.member.follow.repository.FollowRepository;
+import com.example.demo.domain.member.user.controller.dto.UserDto;
 import com.example.demo.domain.member.user.entity.User;
 import com.example.demo.domain.member.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
