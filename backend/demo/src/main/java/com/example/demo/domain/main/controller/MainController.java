@@ -18,7 +18,7 @@ public class MainController {
     @GetMapping
     public ResponseEntity<MainResponseDto> mainIndex() {
         MainResponseDto response = new MainResponseDto(
-                "HELLO JAE WOO CI / CD with Github Action, Docker, Oauth2.0, JWT, ElastiCache Redis, RDS MySQL, EC2, S3",
+                "HELLO JAE WOO Project : CI / CD with Github Action, Docker, AWS EC2, RDS, MySQL, S3, ElastiCache Redis, Oauth2.0, JWT,  Redis PUB/SUB, Redis Lock, Kafka, Web Socket",
                 version,
                 LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
         );
