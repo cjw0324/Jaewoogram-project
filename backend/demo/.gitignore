@@ -38,3 +38,4 @@ out/
 
 ### secret key ###
 **/application-secret.properties
+**/application-secret.yml
