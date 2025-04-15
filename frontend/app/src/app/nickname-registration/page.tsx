@@ -67,7 +67,7 @@ export default function NicknameRegistrationPage() {
           {/* 로고 */}
           <div className="flex justify-center mb-6">
             <div className="text-4xl font-semibold font-serif italic">
-              Instagram
+              Jaewoogram
             </div>
           </div>
 

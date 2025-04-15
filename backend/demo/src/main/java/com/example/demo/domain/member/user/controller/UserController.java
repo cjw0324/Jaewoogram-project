@@ -58,29 +58,29 @@ public class UserController {
     }
 
 
-    @GetMapping("test/search/mysql")
-    public ResponseEntity<List<UserDto>> testSearchUsersMySQL() {
-        String keyword = getRandomTwoDigitKeyword();
-        return ResponseEntity.ok(userService.searchByNickname_MySQL(keyword));
-    }
-
-    @GetMapping("test/search/mongo")
-    public ResponseEntity<List<UserDto>> testSearchUsersMongo() {
-        String keyword = getRandomTwoDigitKeyword();
-        return ResponseEntity.ok(userService.searchByNickname_Mongo(keyword));
-    }
-
-    @GetMapping("test/search/elasticsearch")
-    public ResponseEntity<List<UserDto>> testSearchUsersElasticsearch() {
-        String keyword = getRandomTwoDigitKeyword();
-        return ResponseEntity.ok(userService.searchByNickname_Elasticsearch(keyword));
-    }
-
-    // 공통 키워드 생성 메서드
-    private String getRandomTwoDigitKeyword() {
-        int num = new Random().nextInt(100);  // 0 ~ 99
-        String keyword = String.format("%02d", num);    // 두 자리 문자열로 변환 ("01", "99" 등)
-        log.info("keyword : {} search", keyword);
-        return keyword;
-    }
+//    @GetMapping("test/search/mysql")
+//    public ResponseEntity<List<UserDto>> testSearchUsersMySQL() {
+//        String keyword = getRandomTwoDigitKeyword();
+//        return ResponseEntity.ok(userService.searchByNickname_MySQL(keyword));
+//    }
+//
+//    @GetMapping("test/search/mongo")
+//    public ResponseEntity<List<UserDto>> testSearchUsersMongo() {
+//        String keyword = getRandomTwoDigitKeyword();
+//        return ResponseEntity.ok(userService.searchByNickname_Mongo(keyword));
+//    }
+//
+//    @GetMapping("test/search/elasticsearch")
+//    public ResponseEntity<List<UserDto>> testSearchUsersElasticsearch() {
+//        String keyword = getRandomTwoDigitKeyword();
+//        return ResponseEntity.ok(userService.searchByNickname_Elasticsearch(keyword));
+//    }
+//
+//    // 공통 키워드 생성 메서드
+//    private String getRandomTwoDigitKeyword() {
+//        int num = new Random().nextInt(100);  // 0 ~ 99
+//        String keyword = String.format("%02d", num);    // 두 자리 문자열로 변환 ("01", "99" 등)
+//        log.info("keyword : {} search", keyword);
+//        return keyword;
+//    }
 }
