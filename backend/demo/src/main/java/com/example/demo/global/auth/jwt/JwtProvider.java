@@ -1,8 +1,8 @@
 package com.example.demo.global.auth.jwt;
 
-import com.example.demo.domain.user.entity.User;
-import com.example.demo.domain.user.entity.UserRole;
-import com.example.demo.domain.user.repository.UserRepository;
+import com.example.demo.domain.member.user.entity.User;
+import com.example.demo.domain.member.user.entity.UserRole;
+import com.example.demo.domain.member.user.repository.UserRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.*;
 import jakarta.servlet.http.Cookie;

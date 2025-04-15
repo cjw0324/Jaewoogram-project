@@ -1,6 +1,6 @@
 package com.example.demo.domain.main.controller;
 
-import com.example.demo.domain.item.controller.dto.MainResponseDto;
+import com.example.demo.domain.main.controller.dto.MainResponseDto;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;

@@ -1,7 +1,7 @@
 package com.example.demo.global.auth.controller;
 
-import com.example.demo.domain.user.entity.User;
-import com.example.demo.domain.user.repository.UserRepository;
+import com.example.demo.domain.member.user.entity.User;
+import com.example.demo.domain.member.user.repository.UserRepository;
 import com.example.demo.global.auth.jwt.JwtProvider;
 import com.example.demo.global.auth.jwt.JwtToken;
 import jakarta.servlet.http.Cookie;

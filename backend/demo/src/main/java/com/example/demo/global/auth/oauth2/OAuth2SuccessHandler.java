@@ -1,6 +1,6 @@
 package com.example.demo.global.auth.oauth2;
 
-import com.example.demo.domain.user.entity.User;
+import com.example.demo.domain.member.user.entity.User;
 import com.example.demo.global.auth.jwt.JwtProvider;
 import com.example.demo.global.auth.jwt.JwtToken;
 import jakarta.servlet.ServletException;

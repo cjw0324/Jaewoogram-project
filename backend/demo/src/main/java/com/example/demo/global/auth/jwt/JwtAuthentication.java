@@ -1,7 +1,7 @@
 package com.example.demo.global.auth.jwt;
 
 
-import com.example.demo.domain.user.entity.UserRole;
+import com.example.demo.domain.member.user.entity.UserRole;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.springframework.security.core.Authentication;

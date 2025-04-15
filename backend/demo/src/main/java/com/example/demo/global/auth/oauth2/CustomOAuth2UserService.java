@@ -1,8 +1,8 @@
 package com.example.demo.global.auth.oauth2;
 
 
-import com.example.demo.domain.user.entity.User;
-import com.example.demo.domain.user.repository.UserRepository;
+import com.example.demo.domain.member.user.entity.User;
+import com.example.demo.domain.member.user.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
