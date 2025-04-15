@@ -14,8 +14,9 @@ public class UserFeedService {
 
 
     public List<UserFeedResponse> userFeedList(Long userId) {
-        return postRepository.findAll().stream()
+        return postRepository.findByAuthor_Id(userId).stream()
                 .map(post -> new UserFeedResponse(post.getPostId(), post.getFirstImageUrl()))
                 .toList();
     }
+
 }

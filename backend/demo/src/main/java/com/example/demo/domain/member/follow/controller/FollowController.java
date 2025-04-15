@@ -3,6 +3,7 @@ package com.example.demo.domain.member.follow.controller;
 
 import com.example.demo.domain.member.follow.controller.dto.*;
 import com.example.demo.domain.member.follow.service.FollowService;
+import com.example.demo.domain.member.user.controller.dto.UserDto;
 import com.example.demo.global.auth.jwt.JwtAuthentication;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

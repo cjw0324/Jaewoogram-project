@@ -1,5 +1,6 @@
 package com.example.demo.domain.member.follow.controller.dto;
 
+import com.example.demo.domain.member.user.controller.dto.UserDto;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 

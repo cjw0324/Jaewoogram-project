@@ -39,4 +39,12 @@ public class User {
         isPrivate = !isPrivate;
         return isPrivate;
     }
+
+    public User(String nickname) {
+        this.email = "@.com";
+        this.userRole = UserRole.USER;
+        this.isPrivate = false;
+        this.bio = "";
+        this.nickname = nickname;
+    }
 }

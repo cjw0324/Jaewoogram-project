@@ -66,6 +66,10 @@ dependencies {
 
 	// mongo db
 	implementation 'org.springframework.boot:spring-boot-starter-data-mongodb'
+
+	// elastic search
+	implementation 'co.elastic.clients:elasticsearch-java:8.13.0'
+
 }
 
 tasks.named('test') {

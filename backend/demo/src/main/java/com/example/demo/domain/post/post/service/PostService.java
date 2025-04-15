@@ -70,6 +70,7 @@ public class PostService {
             image.setImageURL(url);
             post.addImage(image);
         }
+
     }
 
     public PostResponse getPost(Long postId, Long userId) {
