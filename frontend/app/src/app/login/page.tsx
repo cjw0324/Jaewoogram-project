@@ -34,16 +34,19 @@ const SocialLoginButton = ({
       bg: "bg-white",
       border: "border-gray-300",
       text: "text-gray-800",
+      icon: "/images/google-logo.svg",
     },
     naver: {
       bg: "bg-[#03C75A]",
       border: "border-[#03C75A]",
       text: "text-white",
+      icon: "/images/naver-logo.svg",
     },
     kakao: {
       bg: "bg-[#FEE500]",
       border: "border-[#FEE500]",
       text: "text-black",
+      icon: "/images/kakao-logo.svg",
     },
   };
 
@@ -51,12 +54,12 @@ const SocialLoginButton = ({
 
   return (
     <button
-      className={`w-full flex items-center justify-center py-3 px-4 rounded-md ${style.bg} ${style.border} ${style.text} border focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 mb-3`}
+      className={`w-full flex items-center justify-center py-2 px-4 rounded ${style.bg} ${style.border} ${style.text} border font-medium text-sm mb-3 focus:outline-none`}
       onClick={handleLogin}
     >
-      <div className="w-5 h-5 mr-3">
+      <div className="w-5 h-5 mr-3 flex items-center justify-center">
         <Image
-          src={`/images/${provider}-logo.svg`}
+          src={style.icon}
           alt={`${provider} logo`}
           width={20}
           height={20}
@@ -77,33 +80,56 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-lg shadow-md">
-        {/* 🔥 Suspense로 감싸야 useSearchParams() 에러 방지 가능 */}
-        <Suspense fallback={null}>
-          <SearchParamHandler />
-        </Suspense>
+    <div className="min-h-screen flex flex-col items-center justify-center bg-white py-6 px-4">
+      {/* 🔥 Suspense로 감싸야 useSearchParams() 에러 방지 가능 */}
+      <Suspense fallback={null}>
+        <SearchParamHandler />
+      </Suspense>
 
-        <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            로그인
-          </h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
-            소셜 계정으로 간편하게 로그인하세요
-          </p>
+      <div className="max-w-xs w-full">
+        {/* 로고 */}
+        <div className="flex justify-center mb-8">
+          <div className="text-4xl font-semibold font-serif italic">
+            Jaewoogram
+          </div>
         </div>
 
-        <div className="mt-8 space-y-6">
-          <SocialLoginButton provider="google" text="Google로 로그인" />
-          <SocialLoginButton provider="naver" text="네이버로 로그인" />
-          <SocialLoginButton provider="kakao" text="카카오로 로그인" />
+        {/* 로그인 영역 */}
+        <div className="bg-white p-5 border border-gray-200 rounded mb-3">
+          <div className="mb-6">
+            <h2 className="text-center text-lg font-medium text-gray-800">
+              로그인
+            </h2>
+            <p className="text-center text-xs text-gray-500 mt-1">
+              소셜 계정으로 간편하게 로그인하세요
+            </p>
+          </div>
+
+          <div className="space-y-3">
+            <SocialLoginButton provider="google" text="Google로 로그인" />
+            <SocialLoginButton provider="naver" text="네이버로 로그인" />
+            <SocialLoginButton provider="kakao" text="카카오로 로그인" />
+          </div>
+
+          <div className="flex items-center my-4">
+            <div className="flex-grow border-t border-gray-200"></div>
+            <div className="px-4 text-xs text-gray-500 uppercase">또는</div>
+            <div className="flex-grow border-t border-gray-200"></div>
+          </div>
 
           <button
             onClick={handleGuestAccess}
-            className="w-full py-3 px-4 rounded-md bg-gray-200 text-gray-800 hover:bg-gray-300 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            className="w-full py-2 px-4 rounded bg-transparent text-blue-500 text-sm font-medium hover:text-blue-600 focus:outline-none"
           >
             비회원으로 이용하기
           </button>
+        </div>
+
+        {/* 푸터 */}
+        <div className="mt-6 text-center">
+          <p className="text-xs text-gray-500 mt-4">
+            © 2025 Jaewoo's toy project
+          </p>
         </div>
       </div>
     </div>

@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useAuth } from "../../lib/auth/AuthProvider";
+import { Check } from "lucide-react";
 
 export default function SignUpClient() {
   const searchParams = useSearchParams();
@@ -14,6 +15,7 @@ export default function SignUpClient() {
 
   const [redirecting, setRedirecting] = useState(false);
   const [statusMessage, setStatusMessage] = useState("인증 상태 확인 중...");
+  const [progress, setProgress] = useState(0);
 
   useEffect(() => {
     const checkAuthAndRedirect = async () => {
@@ -29,17 +31,32 @@ export default function SignUpClient() {
 
         if (isNewUser) {
           setStatusMessage("닉네임 등록 페이지로 이동합니다...");
-          setTimeout(() => {
-            router.push("/nickname-registration");
-          }, 1000);
+
+          // 진행 상태 애니메이션
+          let currentProgress = 0;
+          const progressInterval = setInterval(() => {
+            currentProgress += 1;
+            setProgress(currentProgress);
+            if (currentProgress >= 100) {
+              clearInterval(progressInterval);
+              router.push("/nickname-registration");
+            }
+          }, 10);
         } else {
           setStatusMessage("메인 페이지로 이동합니다...");
           const redirectUrl = localStorage.getItem("auth_redirect") || "/";
           localStorage.removeItem("auth_redirect");
 
-          setTimeout(() => {
-            router.push(redirectUrl);
-          }, 1000);
+          // 진행 상태 애니메이션
+          let currentProgress = 0;
+          const progressInterval = setInterval(() => {
+            currentProgress += 1;
+            setProgress(currentProgress);
+            if (currentProgress >= 100) {
+              clearInterval(progressInterval);
+              router.push(redirectUrl);
+            }
+          }, 10);
         }
       } catch (error: any) {
         console.error("인증 상태 확인 실패:", error);
@@ -61,52 +78,67 @@ export default function SignUpClient() {
     checkAuthAndRedirect();
   }, [fetchUserInfo, isNewUser, router, redirecting]);
 
+  const handleManualRedirect = () => {
+    const redirectUrl = localStorage.getItem("auth_redirect") || "/";
+    localStorage.removeItem("auth_redirect");
+    router.push(redirectUrl);
+  };
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-lg shadow-md text-center">
-        <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-8 w-8 text-green-600"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M5 13l4 4L19 7"
-            />
-          </svg>
+    <div className="min-h-screen bg-white flex flex-col items-center justify-center px-4">
+      <div className="w-full max-w-sm text-center">
+        {/* 로고 */}
+        <div className="flex justify-center mb-6">
+          <div className="text-4xl font-semibold font-serif italic">
+            Instagram
+          </div>
         </div>
 
-        <h2 className="text-2xl font-extrabold text-gray-900">
-          {isNewUser ? "가입이 완료되었습니다!" : "로그인이 완료되었습니다!"}
-        </h2>
-
-        <p className="text-sm text-gray-600 mt-2">{statusMessage}</p>
-
-        <div className="mt-4">
-          <div className="relative pt-1">
-            <div className="overflow-hidden h-2 text-xs flex rounded bg-green-200">
-              <div className="animate-pulse w-full h-full bg-green-500"></div>
+        {/* 완료 아이콘 */}
+        <div className="mx-auto w-20 h-20 flex items-center justify-center mb-8">
+          <div className="w-20 h-20 rounded-full bg-gradient-to-tr from-yellow-400 to-pink-500 flex items-center justify-center p-0.5">
+            <div className="w-full h-full rounded-full bg-white flex items-center justify-center">
+              <div className="w-16 h-16 rounded-full bg-blue-500 flex items-center justify-center">
+                <Check size={32} className="text-white" />
+              </div>
             </div>
           </div>
         </div>
 
+        {/* 메시지 */}
+        <h2 className="text-xl font-semibold text-gray-900 mb-3">
+          {isNewUser ? "가입이 완료되었습니다!" : "로그인이 완료되었습니다!"}
+        </h2>
+
+        <p className="text-sm text-gray-500 mb-6">{statusMessage}</p>
+
+        {/* 진행 상태 바 */}
+        <div className="w-full bg-gray-100 h-1 rounded-full overflow-hidden mb-8">
+          <div
+            className="bg-gradient-to-r from-blue-500 to-pink-500 h-full rounded-full"
+            style={{ width: `${progress}%`, transition: "width 0.1s ease" }}
+          ></div>
+        </div>
+
+        {/* 수동 이동 버튼 */}
         {!isNewUser && !redirecting && (
           <button
-            onClick={() => {
-              const redirectUrl = localStorage.getItem("auth_redirect") || "/";
-              localStorage.removeItem("auth_redirect");
-              router.push(redirectUrl);
-            }}
-            className="mt-4 w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            onClick={handleManualRedirect}
+            className="w-full py-2.5 bg-blue-500 text-white rounded-md text-sm font-medium"
           >
             지금 바로 이동
           </button>
         )}
+
+        {/* 추가 정보 */}
+        <div className="mt-10 text-xs text-gray-400">
+          <p>계정 활동 및 보안을 위해 로그인 정보가 저장되었습니다.</p>
+        </div>
+      </div>
+
+      {/* 푸터 */}
+      <div className="mt-auto w-full text-center py-6">
+        <p className="text-xs text-gray-400">© 2025 Instagram Clone</p>
       </div>
     </div>
   );
