@@ -2,6 +2,7 @@ package com.example.demo.domain.member.user.controller.dto;
 
 import com.example.demo.domain.member.user.entity.User;
 import com.example.demo.domain.member.user.entity.UserDocument;
+import com.example.demo.domain.member.user.entity.UserEsDocument;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -22,6 +23,10 @@ public class UserDto {
     }
 
     public static UserDto from(UserDocument doc) {
+        return new UserDto(Long.parseLong(doc.getId()), doc.getNickname());
+    }
+
+    public static UserDto from(UserEsDocument doc) {
         return new UserDto(Long.parseLong(doc.getId()), doc.getNickname());
     }
 }

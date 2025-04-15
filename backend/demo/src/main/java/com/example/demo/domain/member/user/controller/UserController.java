@@ -38,7 +38,7 @@ public class UserController {
     public ResponseEntity<List<UserDto>> searchUsers(
             @RequestParam String nickname
     ) {
-        return ResponseEntity.ok(userService.searchByNickname_Mongo(nickname));
+        return ResponseEntity.ok(userService.searchByNickname_Elasticsearch(nickname));
     }
 
     @GetMapping("/{userId}")
@@ -68,6 +68,12 @@ public class UserController {
     public ResponseEntity<List<UserDto>> testSearchUsersMongo() {
         String keyword = getRandomTwoDigitKeyword();
         return ResponseEntity.ok(userService.searchByNickname_Mongo(keyword));
+    }
+
+    @GetMapping("test/search/elasticsearch")
+    public ResponseEntity<List<UserDto>> testSearchUsersElasticsearch() {
+        String keyword = getRandomTwoDigitKeyword();
+        return ResponseEntity.ok(userService.searchByNickname_Elasticsearch(keyword));
     }
 
     // 공통 키워드 생성 메서드
