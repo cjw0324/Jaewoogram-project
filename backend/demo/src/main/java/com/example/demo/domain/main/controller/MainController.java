@@ -8,20 +8,42 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 
 @RestController
 @RequestMapping("/")
 public class MainController {
 
-    private static final String version = "v3.0.1";
+    private static final String version = "v4.0.1";
 
     @GetMapping
     public ResponseEntity<MainResponseDto> mainIndex() {
         MainResponseDto response = new MainResponseDto(
-                "HELLO JAE WOO Project : CI / CD with Github Action, Docker, AWS EC2, RDS, MySQL, S3, ElastiCache Redis, Oauth2.0, JWT,  Redis PUB/SUB, Redis Lock, Kafka, Web Socket",
+                String.join("\n", List.of(
+                        "HELLO Jaewoo Project : Instagram Clone Toy project\n",
+
+                        "📦 Deploy",
+                        "Github Action CI / CD, Docker, AWS EC2\n",
+
+                        "🛢️ Database & Storage",
+                        "AWS RDS, MySQL, AWS S3, AWS ElastiCache - Redis\n",
+
+                        "🔐 Auth & Security",
+                        "OAuth2.0, JWT, Redis Distributed Lock\n",
+
+                        "📡 Communication & Messaging",
+                        "Asynchronous : Kafka, Redis PUB/SUB, WebSocket\n",
+
+                        "🔍 Search & Logging",
+                        "Elasticsearch, Kibana\n",
+
+                        "📈 Monitoring",
+                        "Prometheus, Grafana\n"
+                )),
                 version,
                 LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
         );
+
         return ResponseEntity.ok(response);
     }
 

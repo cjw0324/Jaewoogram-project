@@ -45,14 +45,6 @@ export default function HomePage() {
     }
   };
 
-  const handleGoToItems = () => {
-    if (user) {
-      router.push("/items");
-    } else {
-      router.push("/login");
-    }
-  };
-
   useEffect(() => {
     fetchMainInfo();
   }, []);
@@ -85,12 +77,15 @@ export default function HomePage() {
                   </div>
                 ) : serverInfo ? (
                   <div className="space-y-2 text-sm">
-                    <p className="flex items-center py-1 border-b border-gray-100">
-                      <span className="text-gray-500 w-24 flex-shrink-0">
+                    <div className="flex items-start py-1 border-b border-gray-100">
+                      <span className="text-gray-500 w-24 flex-shrink-0 mt-1">
                         메시지
                       </span>
-                      <span className="ml-6">{serverInfo.message}</span>
-                    </p>
+                      <pre className="ml-6 whitespace-pre-wrap text-sm">
+                        {serverInfo.message}
+                      </pre>
+                    </div>
+
                     <p className="flex items-center py-1 border-b border-gray-100">
                       <span className="text-gray-500 w-24 flex-shrink-0">
                         버전
