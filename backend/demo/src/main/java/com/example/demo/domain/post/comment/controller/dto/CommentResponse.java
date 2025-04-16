@@ -11,6 +11,7 @@ import java.util.List;
 public class CommentResponse {
     private Long commentId;
     private String comment;
+    private Long authorId;
     private String authorNickname;
     private LocalDateTime modifiedAt;
     private Boolean likedByCurrentUser;

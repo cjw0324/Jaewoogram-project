@@ -98,6 +98,7 @@ public class CommentService {
 
     }
 
+    @Transactional(readOnly = true)
     public List<CommentResponse> getComments(Long postId, Long userId) {
         List<Comment> comments = commentRepository.findAllWithChildrenByPostId(postId);
         return comments.stream()
@@ -126,7 +127,7 @@ public class CommentService {
         commentRepository.delete(comment);
     }
 
-    private CommentResponse toResponse(Comment comment, Long userId) {
+    public CommentResponse toResponse(Comment comment, Long userId) {
         boolean liked = userId != null && likeRepository.existsByCommentIdAndUserId(comment.getId(), userId);
         String redisKey = "comment:like:" + comment.getId();
         int likeCount = redissonClient.getAtomicLong(redisKey).isExists()
@@ -137,6 +138,7 @@ public class CommentService {
         return CommentResponse.builder()
                 .commentId(comment.getId())
                 .comment(comment.getComment())
+                .authorId(comment.getAuthor().getId())
                 .authorNickname(comment.getAuthor().getNickname())
                 .modifiedAt(comment.getModifiedDate())
                 .likedByCurrentUser(liked)
