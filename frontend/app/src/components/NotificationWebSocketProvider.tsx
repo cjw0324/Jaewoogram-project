@@ -18,6 +18,7 @@ export function NotificationWebSocketProvider({
   const socketRef = useRef<WebSocket | null>(null);
 
   useEffect(() => {
+    // ✅ useEffect는 항상 실행되고, 내부 조건으로 분기
     if (!user?.id) return;
 
     const socket = new WebSocket(
@@ -42,8 +43,16 @@ export function NotificationWebSocketProvider({
       console.error("⚠️ WebSocket 에러", e);
     };
 
+    // ✅ ping 보내는 keep-alive
+    const pingInterval = setInterval(() => {
+      if (socket.readyState === WebSocket.OPEN) {
+        socket.send("ping");
+      }
+    }, 30000);
+
     return () => {
       socket.close();
+      clearInterval(pingInterval);
     };
   }, [user?.id]);
 

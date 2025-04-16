@@ -15,17 +15,17 @@ export default function Header() {
   const hasUnread = useNotificationStore((state) => state.hasUnread);
   const setUnread = useNotificationStore((state) => state.setUnread);
 
-  // 로그인/회원가입 페이지에서는 헤더 숨김
-  if (pathname === "/login" || pathname === "/signup") {
-    return null;
-  }
+  // ✅ 로그인/회원가입 페이지 여부 확인 (hook 아래에서 조건 분기)
+  const isAuthPage = pathname === "/login" || pathname === "/signup";
 
-  // 알림 페이지 진입 시 읽음 처리
+  // ✅ 알림 페이지 진입 시 읽음 처리
   useEffect(() => {
     if (pathname === "/notifications") {
       setUnread(false);
     }
   }, [pathname, setUnread]);
+
+  if (isAuthPage) return null;
 
   if (!user) {
     return (
@@ -83,7 +83,7 @@ export default function Header() {
             className={`relative ${
               pathname === "/notifications" ? "text-black" : "text-gray-500"
             }`}
-            onClick={() => setUnread(false)} // ✅ 알림 페이지 방문 시 읽음 처리
+            onClick={() => setUnread(false)}
           >
             <Heart size={24} />
             {hasUnread && (
