@@ -2,6 +2,8 @@ package com.example.demo.domain.post.like.service;
 
 import com.example.demo.domain.member.user.entity.User;
 import com.example.demo.domain.member.user.repository.UserRepository;
+import com.example.demo.domain.notice.message.LikeNotificationMessage;
+import com.example.demo.domain.notice.producer.NotificationProducer;
 import com.example.demo.domain.post.like.entity.PostLike;
 import com.example.demo.domain.post.like.repository.PostLikeRepository;
 import com.example.demo.domain.post.post.controller.dto.LikeResponse;
@@ -22,6 +24,7 @@ public class PostLikeTransaction {
     private final PostRepository postRepository;
     private final UserRepository userRepository;
     private final RedissonClient redissonClient;
+    private final NotificationProducer notificationProducer;
 
     @Transactional
     public LikeResponse toggle(Long userId, Long postId) {
@@ -46,8 +49,20 @@ public class PostLikeTransaction {
             postLikeRepository.save(new PostLike(null, post, user));
             count = atomicLong.incrementAndGet();
             message = "좋아요 추가";
+
+            sendNotification(post, user);
         }
 
         return new LikeResponse(postId, (int) count, message);
+    }
+
+    public void sendNotification(Post post, User user) {
+        notificationProducer.sendLikeNotification(
+                new LikeNotificationMessage(
+                        post.getAuthor().getId(),
+                        post.getPostId(),
+                        user.getNickname()
+                )
+        );
     }
 }
