@@ -1,3 +1,5 @@
+// src/app/layout.tsx
+
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
@@ -5,7 +7,7 @@ import { Inter } from "next/font/google";
 import { AuthProvider } from "../lib/auth/AuthProvider";
 import Headers from "./header";
 import Footer from "./footer";
-import { NotificationWebSocketProvider } from "@/components/NotificationWebSocketProvider";
+import ClientProviders from "@/components/ClientProviders";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -21,7 +23,7 @@ const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "jaewoo toy project",
-  description: "OAuth 2.0 소셜 로그인 / ElastiCache Redis 동시성 이슈",
+  description: "Instagram 기능들을 구현하며 학습하는 project",
 };
 
 export default function RootLayout({
@@ -33,13 +35,13 @@ export default function RootLayout({
     <html lang="ko" className={`${geistSans.variable} ${geistMono.variable}`}>
       <body className={inter.className}>
         <AuthProvider>
-          <NotificationWebSocketProvider>
+          <ClientProviders>
             <div className="flex flex-col min-h-screen">
               <Headers />
               <main className="flex-grow">{children}</main>
               <Footer />
             </div>
-          </NotificationWebSocketProvider>
+          </ClientProviders>
         </AuthProvider>
       </body>
     </html>

@@ -2,6 +2,9 @@ package com.example.demo.domain.post.comment.service;
 
 import com.example.demo.domain.member.user.entity.User;
 import com.example.demo.domain.member.user.repository.UserRepository;
+import com.example.demo.domain.notice.message.NotificationMessage;
+import com.example.demo.domain.notice.message.NotificationType;
+import com.example.demo.domain.notice.producer.NotificationProducer;
 import com.example.demo.domain.post.comment.entity.Comment;
 import com.example.demo.domain.post.comment.repository.CommentRepositiory;
 import com.example.demo.domain.post.like.repository.CommentLikeRepository;
@@ -15,7 +18,9 @@ import org.redisson.api.RedissonClient;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -27,6 +32,7 @@ public class CommentService {
     private final CommentRepositiory commentRepository;
     private final CommentLikeRepository likeRepository;
     private final RedissonClient redissonClient;
+    private final NotificationProducer notificationProducer;
 
     @Transactional
     public Long createComment(Long userId, CommentCreateRequest request) {
@@ -45,7 +51,51 @@ public class CommentService {
                                 .orElseThrow(() -> new RuntimeException("부모 댓글 없음")) : null
         );
         commentRepository.save(comment);
+
+        if (comment.getParent() != null) {
+            sendReCommentNotification(comment, user);
+        } else {
+            sendCommentNotification(comment, user);
+        }
+
         return comment.getId();
+    }
+
+    public void sendCommentNotification(Comment comment, User user) {  // 게시글에 달린 댓글
+        Map<String, Object> data = new HashMap<>();
+        data.put("postId", comment.getPost().getPostId());
+        data.put("commentId", comment.getId());
+        data.put("comment", comment.getComment());
+
+
+        notificationProducer.sendNotification(
+                new NotificationMessage(
+                        NotificationType.COMMENT_ADDED,
+                        comment.getPost().getAuthor().getId(),  //받는 ID -> 게시글 작성자
+                        user.getId(),                           //보내는 ID
+                        user.getNickname(),                     //보내는사람 닉네임
+                        data                                    //data
+                )
+        );
+
+    }
+
+    public void sendReCommentNotification(Comment comment, User user) {
+        Map<String, Object> data = new HashMap<>();
+        data.put("postId", comment.getPost().getPostId());
+        data.put("commentId", comment.getId());
+        data.put("comment", comment.getComment());
+
+        notificationProducer.sendNotification(
+                new NotificationMessage(
+                        NotificationType.REPLY_ADDED,
+                        comment.getParent().getAuthor().getId(),     //받는 ID -> 상위 댓글 작성자
+                        user.getId(),                                //보내는 ID
+                        user.getNickname(),                          //보내는사람 닉네임
+                        data                                         //data
+                )
+        );
+
     }
 
     public List<CommentResponse> getComments(Long postId, Long userId) {

@@ -6,13 +6,19 @@ import com.example.demo.domain.member.follow.repository.FollowRepository;
 import com.example.demo.domain.member.user.controller.dto.UserDto;
 import com.example.demo.domain.member.user.entity.User;
 import com.example.demo.domain.member.user.repository.UserRepository;
+import com.example.demo.domain.notice.message.NotificationMessage;
+import com.example.demo.domain.notice.message.NotificationType;
+import com.example.demo.domain.notice.producer.NotificationProducer;
 import com.example.demo.global.util.Util;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -21,6 +27,7 @@ public class FollowService {
     private final UserRepository userRepository;
     private final FollowRepository followRepository;
     private final Util util;
+    private final NotificationProducer notificationProducer;
 
     @Transactional
     public FollowResponseDto follow(Long followerId, Long followingId) {
@@ -40,6 +47,15 @@ public class FollowService {
         follow.setApproved(isApproved);
 
         followRepository.save(follow);
+
+        if (isApproved) {
+            // 바로 팔로우 된 거임. 팔로우 한 사람 -> 팔로잉 된 사람 알람 보내기
+            sendNotification(NotificationType.FOLLOW, follow.getFollower(), follow.getFollowing());
+        } else {
+            // 바로 팔로우 안됨. 팔로우 한 사람 -> 팔로잉 된 사람에게 승인 요청 보내기
+            sendNotification(NotificationType.FOLLOW_REQUEST, follow.getFollower(), follow.getFollowing());
+        }
+
         String msg = isApproved ? "팔로우가 완료되었습니다." : "팔로우 요청을 보냈습니다.";
         return new FollowResponseDto(msg, isApproved);
     }
@@ -54,8 +70,25 @@ public class FollowService {
         }
 
         follow.setApproved(true);
-
+        // 팔로우 승인 됨. 팔로우 승인 한 사람 -> 팔로우 요청 보낸 사람
+        sendNotification(NotificationType.FOLLOW_ACCEPTED, follow.getFollowing(), follow.getFollower());
         return new SimpleResponseDto("팔로우 요청을 승인했습니다.");
+    }
+
+    public void sendNotification(NotificationType type, User requestUser, User requiredUser) {
+        Map<String, Object> data = new HashMap<>();
+
+        data.put("time", LocalDateTime.now());
+
+        notificationProducer.sendNotification(
+                new NotificationMessage(
+                        type,
+                        requiredUser.getId(),
+                        requestUser.getId(),
+                        requestUser.getNickname(),
+                        data
+                )
+        );
     }
 
     @Transactional
