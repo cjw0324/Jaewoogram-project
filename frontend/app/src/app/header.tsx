@@ -14,6 +14,7 @@ interface NotificationMessage {
   senderId: number;
   senderNickname: string;
   data: Record<string, any>;
+  createdAt: string;
 }
 
 export default function Header() {
@@ -61,6 +62,7 @@ export default function Header() {
               senderId: n.senderId,
               senderNickname: n.senderNickname,
               data: JSON.parse(n.data),
+              createdAt: n.createdAt,
             }))
             .filter((n) => !existingHashes.has(makeHash(n)));
 

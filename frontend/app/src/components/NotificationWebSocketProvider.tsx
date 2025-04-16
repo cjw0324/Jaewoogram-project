@@ -12,7 +12,8 @@ interface NotificationMessage {
   receiverId: number;
   senderId: number;
   senderNickname: string;
-  data: Record<string, any>; // type에 따라 달라짐
+  data: Record<string, any>;
+  createdAt: string;
 }
 
 export const useNotificationSocket = () =>
