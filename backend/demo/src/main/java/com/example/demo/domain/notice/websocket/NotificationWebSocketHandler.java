@@ -46,13 +46,17 @@ public class NotificationWebSocketHandler implements WebSocketHandler {
         WebSocketSession session = sessions.get(userId);
         if (session != null && session.isOpen()) {
             try {
+                log.info("📨 {}에게 WebSocket 메시지 전송 시도: {}", userId, message);
                 session.sendMessage(new TextMessage(message));
-                log.info("알림 전송 → {}: {}", userId, message);
+                log.info("✅ WebSocket 전송 성공");
             } catch (Exception e) {
-                log.error("알림 전송 실패", e);
+                log.error("❌ WebSocket 전송 실패", e);
             }
+        } else {
+            log.warn("❌ WebSocket 세션 없음 또는 닫힘: {}", userId);
         }
     }
+
 
     private String getUserIdFromQuery(WebSocketSession session) {
         String query = session.getUri().getQuery(); // ex: userId=123

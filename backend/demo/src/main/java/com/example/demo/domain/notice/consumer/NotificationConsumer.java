@@ -23,6 +23,7 @@ public class NotificationConsumer {
     public void consume(String jsonMessage, @Header(KafkaHeaders.RECEIVED_KEY) String userId) {
         try {
             LikeNotificationMessage message = objectMapper.readValue(jsonMessage, LikeNotificationMessage.class);
+            log.info("📩 Kafka 수신: {}, 대상 유저: {}", jsonMessage, userId);
             redisPublisher.publish("notification:" + userId, jsonMessage); // 그대로 Redis로
         } catch (JsonProcessingException e) {
             log.error("Kafka 메시지 역직렬화 실패", e);

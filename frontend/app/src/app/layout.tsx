@@ -5,6 +5,7 @@ import { Inter } from "next/font/google";
 import { AuthProvider } from "../lib/auth/AuthProvider";
 import Headers from "./header";
 import Footer from "./footer";
+import { NotificationWebSocketProvider } from "@/components/NotificationWebSocketProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -32,11 +33,13 @@ export default function RootLayout({
     <html lang="ko" className={`${geistSans.variable} ${geistMono.variable}`}>
       <body className={inter.className}>
         <AuthProvider>
-          <div className="flex flex-col min-h-screen">
-            <Headers />
-            <main className="flex-grow">{children}</main>
-            <Footer />
-          </div>
+          <NotificationWebSocketProvider>
+            <div className="flex flex-col min-h-screen">
+              <Headers />
+              <main className="flex-grow">{children}</main>
+              <Footer />
+            </div>
+          </NotificationWebSocketProvider>
         </AuthProvider>
       </body>
     </html>

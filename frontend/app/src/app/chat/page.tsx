@@ -32,7 +32,7 @@ export default function ChatPage() {
         const user = await res.json();
         setUserId(user.id);
 
-        const socketUrl = `${process.env.NEXT_PUBLIC_WS_BASE_URL}?userId=${user.id}`;
+        const socketUrl = `${process.env.NEXT_PUBLIC_WS_BASE_URL}/chat?userId=${user.id}`;
         const socket = new WebSocket(socketUrl);
         socketRef.current = socket;
 
