@@ -1,5 +1,6 @@
 package com.example.demo.domain.post.post.controller;
 
+import com.example.demo.domain.post.like.service.PostLikeService;
 import com.example.demo.domain.post.post.controller.dto.*;
 import com.example.demo.domain.post.post.service.PostService;
 import com.example.demo.global.auth.jwt.JwtAuthentication;
@@ -15,6 +16,7 @@ import java.util.List;
 public class PostController {
 
     private final PostService postService;
+    private final PostLikeService postLikeService;
 
     // 게시글 작성
     @PostMapping
@@ -57,12 +59,12 @@ public class PostController {
         return ResponseEntity.ok(response);
     }
 
-    // 게시글 전체 조회 (필요시 pagination 가능)
-    @GetMapping
-    public ResponseEntity<List<PostSummaryResponse>> getAllPosts() {
-        List<PostSummaryResponse> posts = postService.getAllPosts();
-        return ResponseEntity.ok(posts);
-    }
+//    // 게시글 전체 조회 (필요시 pagination 가능)
+//    @GetMapping
+//    public ResponseEntity<List<PostSummaryResponse>> getAllPosts() {
+//        List<PostSummaryResponse> posts = postService.getAllPosts();
+//        return ResponseEntity.ok(posts);
+//    }
 
     // 게시글 좋아요 토글
     @PostMapping("/{postId}/like")
@@ -70,7 +72,7 @@ public class PostController {
             @PathVariable Long postId,
             JwtAuthentication auth
     ) {
-        LikeResponse response = postService.toggleLike(auth.getUserId(), postId);
+        LikeResponse response = postLikeService.toggleLike(auth.getUserId(), postId);
         return ResponseEntity.ok(response);
     }
 }

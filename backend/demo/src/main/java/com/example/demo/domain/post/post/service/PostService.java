@@ -88,26 +88,6 @@ public class PostService {
         return new PostResponse(post, (int) likeCount, liked, userId);
     }
 
-    public LikeResponse toggleLike(Long userId, Long postId) {
-        String lockKey = "lock:post:like:" + postId;
-        RLock lock = redissonClient.getLock(lockKey);
-
-        try {
-            if (lock.tryLock(3, 1, TimeUnit.SECONDS)) {
-                return postLikeTransaction.toggle(userId, postId);
-            } else {
-                throw new RuntimeException("잠시 후 다시 시도해주세요.");
-            }
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new RuntimeException("락 획득 중 인터럽트 발생");
-        } finally {
-            if (lock.isHeldByCurrentThread()) {
-                lock.unlock();
-            }
-        }
-    }
-
     @Transactional
     public void deletePost(Long postId, Long userId) {
         Post post = postRepository.findById(postId)

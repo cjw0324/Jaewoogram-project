@@ -42,9 +42,37 @@ export default function UserProfilePage() {
   const [followStatus, setFollowStatus] = useState<FollowState | null>(null);
   const [loading, setLoading] = useState(true);
   const [statusLoading, setStatusLoading] = useState(false);
-  const [feed, setFeed] = useState<UserFeedResponse[]>([]);
   const [activeTab, setActiveTab] = useState<"posts" | "tagged">("posts");
-  const postCount = feed.length;
+  const [feed, setFeed] = useState<UserFeedResponse[] | "FORBIDDEN" | null>(
+    null
+  );
+  const [postCount, setPostCount] = useState<number>(0); // 게시글 수를 저장할 상태 변수
+
+  // 게시글 수를 가져오는 함수
+  useEffect(() => {
+    const fetchPostCount = async () => {
+      try {
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/user/feed/count`,
+          {
+            credentials: "include",
+            headers: {
+              "Content-Type": "application/json",
+              showUserId: userId,
+            },
+          }
+        );
+        if (res.ok) {
+          const count = await res.json();
+          setPostCount(count);
+        }
+      } catch (err) {
+        console.error("게시글 수 조회 중 오류 발생:", err);
+      }
+    };
+
+    fetchPostCount();
+  }, [userId]);
 
   useEffect(() => {
     const fetchFeed = async () => {
@@ -53,20 +81,30 @@ export default function UserProfilePage() {
           `${process.env.NEXT_PUBLIC_API_BASE_URL}/user/feed`,
           {
             credentials: "include",
+            headers: {
+              "Content-Type": "application/json",
+              showUserId: userId,
+            },
           }
         );
-        if (!res.ok) throw new Error("피드 조회 실패");
+        if (res.status === 403) {
+          setFeed("FORBIDDEN");
+          setLoading(false);
+          return; // 403 에러 시 즉시 함수 종료
+        }
+
         const data = await res.json();
         setFeed(data);
       } catch (err) {
         console.error(err);
+        setFeed([]); // 실패했을 때는 빈 피드로 처리
       } finally {
         setLoading(false);
       }
     };
 
     fetchFeed();
-  }, []);
+  }, [userId]);
 
   const fetchProfile = useCallback(async () => {
     try {
@@ -272,9 +310,9 @@ export default function UserProfilePage() {
             </div>
           ) : (
             <div className="flex items-center space-x-4">
-              <button className="text-black">
+              {/* <button className="text-black">
                 <Users size={22} />
-              </button>
+              </button> */}
             </div>
           )}
         </div>
@@ -307,7 +345,7 @@ export default function UserProfilePage() {
 
                 <div
                   className="text-center cursor-pointer"
-                  onClick={() => router.push("/followers")}
+                  onClick={() => router.push(`/followers/${userId}`)}
                 >
                   <div className="font-semibold text-lg">
                     {profile.followerCount}
@@ -317,7 +355,7 @@ export default function UserProfilePage() {
 
                 <div
                   className="text-center cursor-pointer"
-                  onClick={() => router.push("/followings")}
+                  onClick={() => router.push(`/followings/${userId}`)}
                 >
                   <div className="font-semibold text-lg">
                     {profile.followingCount}
@@ -335,8 +373,18 @@ export default function UserProfilePage() {
                     >
                       프로필 편집
                     </button>
-                    <button className="flex-1 bg-gray-100 text-gray-800 font-medium px-2 py-1.5 rounded-md text-sm border border-gray-300">
-                      계정 공유
+                    <button
+                      onClick={() => router.push("/follow/requests")}
+                      className="flex-1 bg-gray-100 text-gray-800 font-medium px-2 py-1.5 rounded-md text-sm border border-gray-300"
+                    >
+                      받은 요청
+                    </button>
+
+                    <button
+                      onClick={() => router.push("/follow/requested")}
+                      className="flex-1 bg-gray-100 text-gray-800 font-medium px-2 py-1.5 rounded-md text-sm border border-gray-300"
+                    >
+                      보낸 요청
                     </button>
                   </>
                 ) : (
@@ -386,7 +434,21 @@ export default function UserProfilePage() {
             {/* 게시물 그리드 */}
             {activeTab === "posts" ? (
               <div className="grid grid-cols-3 gap-px mt-0.5">
-                {feed.length > 0 ? (
+                {feed === "FORBIDDEN" ? (
+                  // ✅ 권한 없음
+                  <div className="col-span-3 py-16 flex flex-col items-center justify-center">
+                    <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-4">
+                      <Lock size={24} className="text-gray-400" />
+                    </div>
+                    <p className="text-lg font-semibold mb-1">
+                      권한이 없습니다
+                    </p>
+                    <p className="text-sm text-gray-500 text-center max-w-xs">
+                      이 계정의 게시물을 볼 수 있는 권한이 없습니다.
+                    </p>
+                  </div>
+                ) : Array.isArray(feed) && feed.length > 0 ? (
+                  // ✅ 게시물 있음
                   feed.map((post) => (
                     <div
                       key={post.postId}
@@ -402,6 +464,7 @@ export default function UserProfilePage() {
                     </div>
                   ))
                 ) : (
+                  // ✅ 게시물 없음
                   <div className="col-span-3 py-16 flex flex-col items-center justify-center">
                     <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-4">
                       <Grid size={24} className="text-gray-400" />

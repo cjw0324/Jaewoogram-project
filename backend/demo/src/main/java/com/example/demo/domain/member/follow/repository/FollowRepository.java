@@ -17,4 +17,6 @@ public interface FollowRepository extends JpaRepository<Follow, Long> {
 
     long countByFollowingIdAndApprovedTrue(Long followingId); // 승인된 팔로워 수
     long countByFollowerIdAndApprovedTrue(Long followerId);   // 승인된 팔로잉 수
+
+    boolean existsByFollowerIdAndFollowingIdAndApproved(Long followerId, Long followingId, boolean approved);
 }

@@ -6,6 +6,7 @@ import com.example.demo.domain.member.follow.repository.FollowRepository;
 import com.example.demo.domain.member.user.controller.dto.UserDto;
 import com.example.demo.domain.member.user.entity.User;
 import com.example.demo.domain.member.user.repository.UserRepository;
+import com.example.demo.global.util.Util;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
@@ -19,6 +20,7 @@ public class FollowService {
 
     private final UserRepository userRepository;
     private final FollowRepository followRepository;
+    private final Util util;
 
     @Transactional
     public FollowResponseDto follow(Long followerId, Long followingId) {
@@ -101,8 +103,14 @@ public class FollowService {
     }
 
     @Transactional(readOnly = true)
-    public FollowListResponseDto getMyFollowers(Long userId) {
-        List<Follow> follows = followRepository.findByFollowingIdAndApprovedTrue(userId);
+    public FollowListResponseDto getMyFollowers(Long showUserId, Long requestUserId) {
+
+
+        if (!util.authorizeCheck(showUserId, requestUserId)) {
+            throw new com.example.demo.global.exception.AccessDeniedException("팔로잉 목록 권한이 없습니다");
+        }
+
+        List<Follow> follows = followRepository.findByFollowingIdAndApprovedTrue(showUserId);
         List<UserDto> users = follows.stream()
                 .map(Follow::getFollower)
                 .map(UserDto::from)
@@ -112,8 +120,14 @@ public class FollowService {
     }
 
     @Transactional(readOnly = true)
-    public FollowListResponseDto getMyFollowings(Long userId) {
-        List<Follow> follows = followRepository.findByFollowerIdAndApprovedTrue(userId);
+    public FollowListResponseDto getMyFollowings(Long showUserId, Long requestUserId) {
+
+
+        if (!util.authorizeCheck(showUserId, requestUserId)) {
+            throw new com.example.demo.global.exception.AccessDeniedException("팔로잉 목록 권한이 없습니다");
+        }
+
+        List<Follow> follows = followRepository.findByFollowerIdAndApprovedTrue(showUserId);
         List<UserDto> users = follows.stream()
                 .map(Follow::getFollowing)
                 .map(UserDto::from)

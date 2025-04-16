@@ -279,22 +279,6 @@ export default function ProfileEditPage() {
                 ? "비공개 계정: 팔로우를 요청한 사용자만 회원님의 게시물과 스토리를 볼 수 있습니다."
                 : "공개 계정: 모든 사용자가 회원님의 프로필과 게시물을 볼 수 있습니다."}
             </p>
-
-            <div className="grid grid-cols-2 gap-2">
-              <button
-                onClick={() => router.push("/follow/requests")}
-                className="bg-gray-50 text-gray-800 px-4 py-2 rounded-md text-sm font-medium border border-gray-200 hover:bg-gray-100"
-              >
-                받은 팔로우 요청
-              </button>
-
-              <button
-                onClick={() => router.push("/follow/requested")}
-                className="bg-gray-50 text-gray-800 px-4 py-2 rounded-md text-sm font-medium border border-gray-200 hover:bg-gray-100"
-              >
-                보낸 팔로우 요청
-              </button>
-            </div>
           </div>
         </div>
       </div>

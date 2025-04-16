@@ -65,13 +65,13 @@ public class FollowController {
     }
 
     @GetMapping("/followers")
-    public ResponseEntity<FollowListResponseDto> getFollowers(JwtAuthentication auth) {
-        return ResponseEntity.ok(followService.getMyFollowers(auth.getUserId()));
+    public ResponseEntity<FollowListResponseDto> getFollowers(@RequestHeader Long showUserId, JwtAuthentication auth) {
+        return ResponseEntity.ok(followService.getMyFollowers(showUserId, auth.getUserId()));
     }
 
     @GetMapping("/followings")
-    public ResponseEntity<FollowListResponseDto> getFollowings(JwtAuthentication auth) {
-        return ResponseEntity.ok(followService.getMyFollowings(auth.getUserId()));
+    public ResponseEntity<FollowListResponseDto> getFollowings(@RequestHeader Long showUserId,JwtAuthentication auth) {
+        return ResponseEntity.ok(followService.getMyFollowings(showUserId, auth.getUserId()));
     }
 
     @GetMapping("/status/{targetUserId}")
