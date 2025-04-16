@@ -1,24 +1,32 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { useAuth } from "@/lib/auth/AuthProvider";
 import { Home, Search, PlusSquare, Heart, User, LogOut } from "lucide-react";
-import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useNotificationStore } from "./stores/notificationStore";
 
 export default function Header() {
   const { user, logout } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
   const [showMenu, setShowMenu] = useState(false);
+  const hasUnread = useNotificationStore((state) => state.hasUnread);
+  const setUnread = useNotificationStore((state) => state.setUnread);
 
-  // 로그인 페이지 또는 회원가입 페이지에서는 헤더를 보여주지 않음
+  // 로그인/회원가입 페이지에서는 헤더 숨김
   if (pathname === "/login" || pathname === "/signup") {
     return null;
   }
 
-  // 인증되지 않은 경우 로그인 링크 표시
+  // 알림 페이지 진입 시 읽음 처리
+  useEffect(() => {
+    if (pathname === "/notifications") {
+      setUnread(false);
+    }
+  }, [pathname, setUnread]);
+
   if (!user) {
     return (
       <header className="sticky top-0 z-50 bg-white border-b border-gray-200 px-4 py-3">
@@ -72,14 +80,18 @@ export default function Header() {
           </Link>
           <Link
             href="/notifications"
-            className={
+            className={`relative ${
               pathname === "/notifications" ? "text-black" : "text-gray-500"
-            }
+            }`}
+            onClick={() => setUnread(false)} // ✅ 알림 페이지 방문 시 읽음 처리
           >
             <Heart size={24} />
+            {hasUnread && (
+              <span className="absolute -top-1 -right-1 bg-red-500 w-2.5 h-2.5 rounded-full" />
+            )}
           </Link>
 
-          {/* 프로필 아이콘 - 클릭 시 메뉴 표시 */}
+          {/* 프로필 */}
           <div className="relative">
             <button
               onClick={handleProfileClick}
@@ -94,7 +106,6 @@ export default function Header() {
               </div>
             </button>
 
-            {/* 드롭다운 메뉴 */}
             {showMenu && (
               <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg border border-gray-200 z-50">
                 <div className="py-1">
