@@ -22,7 +22,6 @@ public class NotificationConsumer {
     @KafkaListener(topics = "notification", groupId = "notification-group")
     public void consume(String jsonMessage, @Header(KafkaHeaders.RECEIVED_KEY) String userId) {
         try {
-//            NotificationMessage message = objectMapper.readValue(jsonMessage, NotificationMessage.class);
             log.info("📩 Kafka 수신: {}, 대상 유저: {}", jsonMessage, userId);
             redisPublisher.publish("notification:" + userId, jsonMessage); // 그대로 Redis로
         } catch (RuntimeException e) {
