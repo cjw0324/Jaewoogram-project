@@ -1,11 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-
 import { useRouter } from "next/navigation";
 import { useNotificationStore } from "../stores/notificationStore";
 
 interface NotificationMessage {
+  id?: number; // 서버에서 온 경우
   type: string;
   receiverId: number;
   senderId: number;
@@ -19,24 +19,70 @@ export default function NotificationPage() {
   const router = useRouter();
 
   useEffect(() => {
-    const stored = localStorage.getItem("notifications");
-    if (stored) {
-      setNotifications(JSON.parse(stored));
-    }
-    setUnread(false); // 🔕 알림 읽음 처리
+    const load = async () => {
+      const local: NotificationMessage[] = JSON.parse(
+        localStorage.getItem("notifications") || "[]"
+      );
+
+      try {
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/notifications/unread`,
+          { credentials: "include" }
+        );
+        const server = await res.json();
+
+        const formatted: NotificationMessage[] = server.map((n: any) => ({
+          id: n.id,
+          type: n.type,
+          receiverId: n.receiverId,
+          senderId: n.senderId,
+          senderNickname: n.senderNickname,
+          data: JSON.parse(n.data),
+        }));
+
+        // 중복 제거
+        const makeHash = (n: NotificationMessage) =>
+          `${n.type}-${n.senderId}-${JSON.stringify(n.data)}`;
+        const localHashes = new Set(local.map(makeHash));
+        const newOnly = formatted.filter((n) => !localHashes.has(makeHash(n)));
+
+        const merged = [...newOnly, ...local];
+        setNotifications(merged);
+        localStorage.setItem("notifications", JSON.stringify(merged));
+      } catch (e) {
+        console.error("❌ 서버 알림 요청 실패", e);
+        setNotifications(local);
+      }
+
+      setUnread(false);
+    };
+
+    load();
   }, []);
 
-  const handleNotificationClick = (
-    clickedIndex: number,
+  const handleNotificationClick = async (
+    index: number,
     n: NotificationMessage
   ) => {
-    // 🔁 클릭된 알림 제거
+    // 1️⃣ 로컬에서 제거
     const newList = [...notifications];
-    newList.splice(clickedIndex, 1);
+    newList.splice(index, 1);
     setNotifications(newList);
     localStorage.setItem("notifications", JSON.stringify(newList));
 
-    // 🚀 이동
+    // 2️⃣ 서버 읽음 처리
+    if (n.id) {
+      try {
+        await fetch(
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/notifications/${n.id}/read`,
+          { method: "PATCH", credentials: "include" }
+        );
+      } catch (e) {
+        console.error("❌ 알림 읽음 처리 실패", e);
+      }
+    }
+
+    // 3️⃣ 이동
     switch (n.type) {
       case "POST_LIKE":
       case "COMMENT_LIKE":
@@ -44,15 +90,27 @@ export default function NotificationPage() {
       case "REPLY_ADDED":
         router.push(`/posts/${n.data.postId}`);
         break;
+      case "FOLLOW":
       case "FOLLOW_REQUEST":
       case "FOLLOW_ACCEPTED":
         router.push(`/users/${n.senderId}`);
         break;
-      case "FOLLOW":
-        router.push(`/users/${n.senderId}`);
-        break;
       default:
         break;
+    }
+  };
+
+  const handleMarkAllAsRead = async () => {
+    setNotifications([]);
+    localStorage.removeItem("notifications");
+
+    try {
+      await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/notifications/read-all`,
+        { method: "PATCH", credentials: "include" }
+      );
+    } catch (e) {
+      console.error("❌ 전체 읽음 처리 실패", e);
     }
   };
 
@@ -79,14 +137,25 @@ export default function NotificationPage() {
 
   return (
     <div className="p-4">
-      <h1 className="text-xl font-bold mb-4">🔔 알림</h1>
+      <div className="flex justify-between items-center mb-4">
+        <h1 className="text-xl font-bold">🔔 알림</h1>
+        <div className="space-x-2 text-sm">
+          <button
+            onClick={handleMarkAllAsRead}
+            className="px-3 py-1 border rounded hover:bg-gray-100"
+          >
+            모두 읽음 처리
+          </button>
+        </div>
+      </div>
+
       {notifications.length === 0 ? (
         <p>알림이 없습니다.</p>
       ) : (
         <ul className="space-y-3">
           {notifications.map((n, i) => (
             <li
-              key={i}
+              key={`${n.type}-${n.senderId}-${i}`}
               onClick={() => handleNotificationClick(i, n)}
               className="p-3 border rounded shadow cursor-pointer hover:bg-gray-100 transition"
             >
