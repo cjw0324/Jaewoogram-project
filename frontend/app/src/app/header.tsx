@@ -7,6 +7,16 @@ import { Home, Search, PlusSquare, Heart, User, LogOut } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useNotificationStore } from "./stores/notificationStore";
 
+interface NotificationMessage {
+  id?: number;
+  type: string;
+  receiverId: number;
+  senderId: number;
+  senderNickname: string;
+  data: Record<string, any>;
+  createdAt: string;
+}
+
 export default function Header() {
   const { user, logout } = useAuth();
   const router = useRouter();
@@ -15,15 +25,60 @@ export default function Header() {
   const hasUnread = useNotificationStore((state) => state.hasUnread);
   const setUnread = useNotificationStore((state) => state.setUnread);
 
-  // ✅ 로그인/회원가입 페이지 여부 확인 (hook 아래에서 조건 분기)
   const isAuthPage = pathname === "/login" || pathname === "/signup";
 
-  // ✅ 알림 페이지 진입 시 읽음 처리
+  // ✅ 알림 페이지 진입 시 빨간 점 제거
   useEffect(() => {
     if (pathname === "/notifications") {
       setUnread(false);
+      return;
     }
-  }, [pathname, setUnread]);
+
+    // ✅ 로그인된 경우 서버 unread 알림 확인
+    const fetchUnread = async () => {
+      if (!user) return;
+
+      try {
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_API_BASE_URL}/notifications/unread`,
+          { credentials: "include" }
+        );
+        const data = await res.json();
+
+        if (Array.isArray(data) && data.length > 0) {
+          const existing: NotificationMessage[] = JSON.parse(
+            localStorage.getItem("notifications") || "[]"
+          );
+
+          const makeHash = (n: NotificationMessage) =>
+            `${n.type}-${n.senderId}-${JSON.stringify(n.data)}`;
+          const existingHashes = new Set(existing.map(makeHash));
+
+          const newOnly = data
+            .map((n: any) => ({
+              id: n.id,
+              type: n.type,
+              receiverId: n.receiverId,
+              senderId: n.senderId,
+              senderNickname: n.senderNickname,
+              data: JSON.parse(n.data),
+              createdAt: n.createdAt,
+            }))
+            .filter((n) => !existingHashes.has(makeHash(n)));
+
+          if (newOnly.length > 0) {
+            const merged = [...newOnly, ...existing];
+            localStorage.setItem("notifications", JSON.stringify(merged));
+            setUnread(true);
+          }
+        }
+      } catch (e) {
+        console.error("❌ 초기 알림 동기화 실패", e);
+      }
+    };
+
+    fetchUnread();
+  }, [pathname, user, setUnread]);
 
   if (isAuthPage) return null;
 

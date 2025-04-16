@@ -35,10 +35,12 @@ public class MainController {
                         "Asynchronous : Kafka, Redis PUB/SUB, WebSocket\n",
 
                         "🔍 Search & Logging",
-                        "Elasticsearch, Kibana\n",
+                        "Elasticsearch, Kibana\n"
 
-                        "📈 Monitoring",
-                        "Prometheus, Grafana\n"
+//                        ,
+//
+//                        "📈 Monitoring",
+//                        "Prometheus, Grafana\n"
                 )),
                 version,
                 LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))

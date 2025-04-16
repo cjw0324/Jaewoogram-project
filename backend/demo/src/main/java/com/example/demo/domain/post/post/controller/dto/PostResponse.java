@@ -17,6 +17,7 @@ public class PostResponse {
     private Long id;
     private String title;
     private String content;
+    private Long authorId;
     private String authorNickname;
     private LocalDateTime updatedAt;
     private Integer likeCount;
@@ -28,6 +29,7 @@ public class PostResponse {
         this.id = post.getPostId();
         this.title = post.getTitle();
         this.content = post.getContent();
+        this.authorId = post.getAuthor().getId();
         this.authorNickname = post.getAuthor().getNickname();
         this.updatedAt = post.getUpdatedAt();
         this.likeCount = likeCount;

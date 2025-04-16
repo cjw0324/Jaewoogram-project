@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { JSX, useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
@@ -9,6 +9,7 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 interface CommentResponse {
   commentId: number;
   comment: string;
+  authorId: number;
   authorNickname: string;
   modifiedAt: string;
   likedByCurrentUser: boolean;
@@ -21,6 +22,7 @@ interface PostResponse {
   id: number;
   title: string;
   content: string;
+  authorId: number;
   authorNickname: string;
   updatedAt: string;
   likeCount: number;
@@ -224,183 +226,105 @@ export default function PostDetailPage() {
     );
   };
 
-  const renderComments = (commentList: CommentResponse[]) => (
-    <div className="space-y-4">
-      {commentList.map((comment) => (
-        <div key={`comment-${comment.commentId}`} className="comment-thread">
-          <div className="flex items-start mb-1">
-            <div className="w-8 h-8 bg-gray-200 rounded-full mr-2 flex-shrink-0">
-              {/* 프로필 이미지 자리 */}
-              <div className="w-full h-full rounded-full flex items-center justify-center text-gray-500 text-xs">
-                {comment.authorNickname.charAt(0).toUpperCase()}
-              </div>
-            </div>
-            <div className="flex-grow">
-              <div className="flex flex-wrap items-baseline">
-                <span className="font-semibold text-sm mr-1">
-                  {comment.authorNickname}
-                </span>
-                {editingCommentId === comment.commentId ? (
-                  <div className="w-full mt-1 mb-2">
-                    <textarea
-                      value={editingContent}
-                      onChange={(e) => setEditingContent(e.target.value)}
-                      className="w-full px-3 py-2 border rounded text-sm"
-                      rows={2}
-                    />
-                    <div className="flex gap-2 mt-1">
-                      <button
-                        onClick={handleCommentUpdate}
-                        className="text-blue-500 text-xs font-medium"
-                      >
-                        완료
-                      </button>
-                      <button
-                        onClick={() => {
-                          setEditingCommentId(null);
-                          setEditingContent("");
-                        }}
-                        className="text-gray-500 text-xs"
-                      >
-                        취소
-                      </button>
-                    </div>
-                  </div>
-                ) : (
-                  <span className="text-sm text-gray-900">
-                    {comment.comment}
-                  </span>
-                )}
-              </div>
-
-              <div className="flex mt-1 text-xs text-gray-500 gap-4">
-                <span>{new Date(comment.modifiedAt).toLocaleDateString()}</span>
-                <button
-                  onClick={() => handleCommentLike(comment.commentId)}
-                  className={comment.likedByCurrentUser ? "text-red-500" : ""}
-                >
-                  좋아요 {comment.likeCount > 0 && comment.likeCount}
-                </button>
-                <button onClick={() => setReplyTo(comment.commentId)}>
-                  답글 달기
-                </button>
-                {comment.isAuthor && (
-                  <>
-                    <button
-                      onClick={() => {
-                        setEditingCommentId(comment.commentId);
-                        setEditingContent(comment.comment);
-                      }}
-                    >
-                      수정
-                    </button>
-                    <button
-                      onClick={() => handleCommentDelete(comment.commentId)}
-                      className="text-red-500"
-                    >
-                      삭제
-                    </button>
-                  </>
-                )}
-              </div>
-            </div>
+  const renderCommentTree = (
+    comment: CommentResponse,
+    depth: number = 0
+  ): JSX.Element => (
+    <div key={comment.commentId} className={`ml-${depth > 0 ? 10 : 0} mt-2`}>
+      <div className="flex items-start">
+        <div
+          className={`w-${depth > 0 ? 6 : 8} h-${
+            depth > 0 ? 6 : 8
+          } bg-gray-200 rounded-full mr-2 flex-shrink-0`}
+        >
+          <div className="w-full h-full rounded-full flex items-center justify-center text-gray-500 text-xs">
+            {comment.authorNickname.charAt(0).toUpperCase()}
           </div>
-
-          {/* 대댓글 */}
-          {comment.children && comment.children.length > 0 && (
-            <div className="ml-10 space-y-3 border-l-2 border-gray-100 pl-3 mt-2">
-              {comment.children.map((reply) => (
-                <div key={`reply-${reply.commentId}`}>
-                  <div className="flex items-start">
-                    <div className="w-6 h-6 bg-gray-200 rounded-full mr-2 flex-shrink-0">
-                      <div className="w-full h-full rounded-full flex items-center justify-center text-gray-500 text-xs">
-                        {reply.authorNickname.charAt(0).toUpperCase()}
-                      </div>
-                    </div>
-                    <div className="flex-grow">
-                      <div className="flex flex-wrap items-baseline">
-                        <span className="font-semibold text-sm mr-1">
-                          {reply.authorNickname}
-                        </span>
-                        {editingCommentId === reply.commentId ? (
-                          <div className="w-full mt-1 mb-2">
-                            <textarea
-                              value={editingContent}
-                              onChange={(e) =>
-                                setEditingContent(e.target.value)
-                              }
-                              className="w-full px-3 py-2 border rounded text-sm"
-                              rows={2}
-                            />
-                            <div className="flex gap-2 mt-1">
-                              <button
-                                onClick={handleCommentUpdate}
-                                className="text-blue-500 text-xs font-medium"
-                              >
-                                완료
-                              </button>
-                              <button
-                                onClick={() => {
-                                  setEditingCommentId(null);
-                                  setEditingContent("");
-                                }}
-                                className="text-gray-500 text-xs"
-                              >
-                                취소
-                              </button>
-                            </div>
-                          </div>
-                        ) : (
-                          <span className="text-sm text-gray-900">
-                            {reply.comment}
-                          </span>
-                        )}
-                      </div>
-
-                      <div className="flex mt-1 text-xs text-gray-500 gap-4">
-                        <span>
-                          {new Date(reply.modifiedAt).toLocaleDateString()}
-                        </span>
-                        <button
-                          onClick={() => handleCommentLike(reply.commentId)}
-                          className={
-                            reply.likedByCurrentUser ? "text-red-500" : ""
-                          }
-                        >
-                          좋아요 {reply.likeCount > 0 && reply.likeCount}
-                        </button>
-                        <button onClick={() => setReplyTo(comment.commentId)}>
-                          답글 달기
-                        </button>
-                        {reply.isAuthor && (
-                          <>
-                            <button
-                              onClick={() => {
-                                setEditingCommentId(reply.commentId);
-                                setEditingContent(reply.comment);
-                              }}
-                            >
-                              수정
-                            </button>
-                            <button
-                              onClick={() =>
-                                handleCommentDelete(reply.commentId)
-                              }
-                              className="text-red-500"
-                            >
-                              삭제
-                            </button>
-                          </>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
         </div>
-      ))}
+        <div className="flex-grow">
+          <div className="flex flex-wrap items-baseline">
+            <span className="font-semibold text-sm mr-1">
+              <Link
+                href={`/users/${comment.authorId}`}
+                className="hover:underline"
+              >
+                {comment.authorNickname}
+              </Link>
+            </span>
+            {editingCommentId === comment.commentId ? (
+              <div className="w-full mt-1 mb-2">
+                <textarea
+                  value={editingContent}
+                  onChange={(e) => setEditingContent(e.target.value)}
+                  className="w-full px-3 py-2 border rounded text-sm"
+                  rows={2}
+                />
+                <div className="flex gap-2 mt-1">
+                  <button
+                    onClick={handleCommentUpdate}
+                    className="text-blue-500 text-xs font-medium"
+                  >
+                    완료
+                  </button>
+                  <button
+                    onClick={() => {
+                      setEditingCommentId(null);
+                      setEditingContent("");
+                    }}
+                    className="text-gray-500 text-xs"
+                  >
+                    취소
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <span className="text-sm text-gray-900">{comment.comment}</span>
+            )}
+          </div>
+          <div className="flex mt-1 text-xs text-gray-500 gap-4">
+            <span>{new Date(comment.modifiedAt).toLocaleDateString()}</span>
+            <button
+              onClick={() => handleCommentLike(comment.commentId)}
+              className={comment.likedByCurrentUser ? "text-red-500" : ""}
+            >
+              좋아요 {comment.likeCount > 0 && comment.likeCount}
+            </button>
+            <button onClick={() => setReplyTo(comment.commentId)}>
+              답글 달기
+            </button>
+            {comment.isAuthor && (
+              <>
+                <button
+                  onClick={() => {
+                    setEditingCommentId(comment.commentId);
+                    setEditingContent(comment.comment);
+                  }}
+                >
+                  수정
+                </button>
+                <button
+                  onClick={() => handleCommentDelete(comment.commentId)}
+                  className="text-red-500"
+                >
+                  삭제
+                </button>
+              </>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {comment.children && comment.children.length > 0 && (
+        <div className="ml-6 border-l-2 border-gray-100 pl-3 mt-2 space-y-2">
+          {comment.children.map((child) => renderCommentTree(child, depth + 1))}
+        </div>
+      )}
+    </div>
+  );
+
+  const renderComments = (comments: CommentResponse[]) => (
+    <div className="space-y-4">
+      {comments.map((comment) => renderCommentTree(comment))}
     </div>
   );
 
@@ -495,7 +419,14 @@ export default function PostDetailPage() {
               </div>
             </div>
             <div>
-              <div className="font-semibold">{post.authorNickname}</div>
+              <div className="font-semibold">
+                <Link
+                  href={`/users/${post.authorId}`}
+                  className="hover:underline"
+                >
+                  {post.authorNickname}
+                </Link>
+              </div>
               <div className="text-xs text-gray-500">
                 {new Date(post.updatedAt).toLocaleDateString()}
               </div>
@@ -597,7 +528,12 @@ export default function PostDetailPage() {
           {/* 제목 및 내용 */}
           <div className="px-4 py-2">
             <div className="mb-1">
-              <span className="font-semibold">{post.authorNickname}</span>{" "}
+              <Link
+                href={`/users/${post.authorId}`}
+                className="font-semibold hover:underline"
+              >
+                {post.authorNickname}
+              </Link>{" "}
               <span className="text-lg font-medium">{post.title}</span>
             </div>
             <p className="text-gray-800 whitespace-pre-wrap text-sm">
