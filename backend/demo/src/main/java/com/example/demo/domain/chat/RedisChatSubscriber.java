@@ -1,6 +1,6 @@
 package com.example.demo.domain.chat;
 
-import com.example.demo.global.config.chat.ChatWebSocketHandler;
+import com.example.demo.global.config.asynchronous.ChatWebSocketHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.connection.Message;
 import org.springframework.data.redis.connection.MessageListener;

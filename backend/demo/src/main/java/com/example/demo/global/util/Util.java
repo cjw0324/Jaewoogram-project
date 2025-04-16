@@ -4,7 +4,6 @@ import com.example.demo.domain.member.follow.repository.FollowRepository;
 import com.example.demo.domain.member.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Service;
 
 @Component
 @RequiredArgsConstructor

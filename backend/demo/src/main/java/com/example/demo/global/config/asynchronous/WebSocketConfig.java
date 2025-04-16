@@ -1,4 +1,4 @@
-package com.example.demo.global.config.chat;
+package com.example.demo.global.config.asynchronous;
 
 import com.example.demo.domain.notice.websocket.NotificationWebSocketHandler;
 import lombok.RequiredArgsConstructor;

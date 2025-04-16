@@ -2,7 +2,8 @@ package com.example.demo.domain.post.like.service;
 
 import com.example.demo.domain.member.user.entity.User;
 import com.example.demo.domain.member.user.repository.UserRepository;
-import com.example.demo.domain.notice.message.LikeNotificationMessage;
+import com.example.demo.domain.notice.message.NotificationMessage;
+import com.example.demo.domain.notice.message.NotificationType;
 import com.example.demo.domain.notice.producer.NotificationProducer;
 import com.example.demo.domain.post.like.entity.PostLike;
 import com.example.demo.domain.post.like.repository.PostLikeRepository;
@@ -16,6 +17,9 @@ import org.redisson.api.RedissonClient;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 
 @Slf4j
@@ -60,11 +64,18 @@ public class PostLikeTransaction {
     }
 
     public void sendNotification(Post post, User user) {
-        notificationProducer.sendLikeNotification(
-                new LikeNotificationMessage(
+
+        Map<String, Object> data = new HashMap<>();
+        data.put("postId", post.getPostId());
+        data.put("title", post.getTitle());
+
+        notificationProducer.sendNotification(
+                new NotificationMessage(
+                        NotificationType.POST_LIKE,
                         post.getAuthor().getId(),
-                        post.getPostId(),
-                        user.getNickname()
+                        user.getId(),
+                        user.getNickname(),
+                        data
                 )
         );
     }

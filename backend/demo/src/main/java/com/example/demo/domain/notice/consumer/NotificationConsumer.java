@@ -1,6 +1,6 @@
 package com.example.demo.domain.notice.consumer;
 
-import com.example.demo.domain.notice.message.LikeNotificationMessage;
+import com.example.demo.domain.notice.message.NotificationMessage;
 import com.example.demo.domain.notice.publisher.RedisNotificationPublisher;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -19,14 +19,14 @@ public class NotificationConsumer {
     private final ObjectMapper objectMapper;
     private final RedisNotificationPublisher redisPublisher;
 
-    @KafkaListener(topics = "notification-like", groupId = "notification-group")
+    @KafkaListener(topics = "notification", groupId = "notification-group")
     public void consume(String jsonMessage, @Header(KafkaHeaders.RECEIVED_KEY) String userId) {
         try {
-            LikeNotificationMessage message = objectMapper.readValue(jsonMessage, LikeNotificationMessage.class);
+//            NotificationMessage message = objectMapper.readValue(jsonMessage, NotificationMessage.class);
             log.info("📩 Kafka 수신: {}, 대상 유저: {}", jsonMessage, userId);
             redisPublisher.publish("notification:" + userId, jsonMessage); // 그대로 Redis로
-        } catch (JsonProcessingException e) {
-            log.error("Kafka 메시지 역직렬화 실패", e);
+        } catch (RuntimeException e) {
+            log.error("Kafka 메시지 해석 실패", e);
         }
     }
 }
