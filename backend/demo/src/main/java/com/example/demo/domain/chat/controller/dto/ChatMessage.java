@@ -11,10 +11,10 @@ import java.time.LocalDateTime;
 @Builder
 public class ChatMessage {
 
-    private String roomId;         // 채팅방 ID
-    private Long senderId;         // 사용자 ID (User.id)
-    private String nickname;       // 사용자 닉네임 (User.nickname)
-    private String content;        // 메시지 내용
-    private String messageType;    // TALK / ENTER / LEAVE
-    private LocalDateTime timestamp;
+    private String roomId;           // 채팅방 ID
+    private Long senderId;           // 사용자 ID (User.id)
+    private String nickname;         // 사용자 닉네임 (User.nickname)
+    private String content;          // 메시지 내용
+    private String messageType;      // TALK / ENTER / LEAVE
+    private LocalDateTime createdAt; //작성 시간
 }

@@ -1,5 +1,6 @@
 package com.example.demo.global.config.asynchronous;
 
+import com.example.demo.domain.chat.websocket.ChatWebSocketHandler;
 import com.example.demo.domain.notice.websocket.NotificationWebSocketHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;

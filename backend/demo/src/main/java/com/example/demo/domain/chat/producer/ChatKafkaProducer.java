@@ -1,4 +1,4 @@
-package com.example.demo.domain.chat;
+package com.example.demo.domain.chat.producer;
 
 import com.example.demo.domain.chat.controller.dto.ChatMessage;
 import com.example.demo.global.auth.jwt.JwtAuthentication;
@@ -24,7 +24,7 @@ public class ChatKafkaProducer {
                 .nickname(authentication.getNickname())
                 .content(content)
                 .messageType("TALK")
-                .timestamp(LocalDateTime.now())
+                .createdAt(LocalDateTime.now())
                 .build();
 
         try {

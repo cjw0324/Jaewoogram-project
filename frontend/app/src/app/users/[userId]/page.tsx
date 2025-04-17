@@ -224,6 +224,24 @@ export default function UserProfilePage() {
     }
   };
 
+  const handleSendMessage = async () => {
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_BASE_URL}/chat/rooms/direct?partnerId=${profile?.id}`,
+        {
+          method: "POST",
+          credentials: "include",
+        }
+      );
+      if (!res.ok) throw new Error("채팅방 생성 실패");
+      const roomId = await res.json();
+      router.push(`/chat/${roomId}`);
+    } catch (error) {
+      console.error("메시지 전송 실패:", error);
+      alert("채팅방 생성 중 오류가 발생했습니다.");
+    }
+  };
+
   const renderFollowButton = () => {
     if (myId?.toString() === userId) return null;
 
@@ -390,7 +408,10 @@ export default function UserProfilePage() {
                 ) : (
                   <div className="w-full flex gap-1">
                     {renderFollowButton()}
-                    <button className="w-24 bg-gray-100 text-gray-800 font-medium px-4 py-1.5 rounded-md text-sm border border-gray-300">
+                    <button
+                      onClick={handleSendMessage}
+                      className="w-24 bg-gray-100 text-gray-800 font-medium px-4 py-1.5 rounded-md text-sm border border-gray-300"
+                    >
                       메시지
                     </button>
                   </div>

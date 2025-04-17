@@ -1,4 +1,4 @@
-package com.example.demo.domain.chat;
+package com.example.demo.domain.chat.publisher;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.StringRedisTemplate;

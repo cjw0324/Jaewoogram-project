@@ -8,5 +8,5 @@ import lombok.Getter;
 public class MainResponseDto {
     private String message;
     private String version;
-    private String timestamp;
+    private String createdAt;
 }

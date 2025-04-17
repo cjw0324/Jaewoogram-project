@@ -1,4 +1,4 @@
-package com.example.demo.global.config.asynchronous;
+package com.example.demo.domain.chat.websocket;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
