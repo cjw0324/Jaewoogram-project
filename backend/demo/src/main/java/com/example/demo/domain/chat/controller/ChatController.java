@@ -1,14 +1,11 @@
 package com.example.demo.domain.chat.controller;
 
-import com.example.demo.domain.chat.ChatKafkaProducer;
+import com.example.demo.domain.chat.controller.dto.SendChatMessageRequest;
+import com.example.demo.domain.chat.producer.ChatKafkaProducer;
 import com.example.demo.global.auth.jwt.JwtAuthentication;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/chat")
@@ -17,14 +14,13 @@ public class ChatController {
 
     private final ChatKafkaProducer producer;
 
-
     @PostMapping("/send")
     public ResponseEntity<?> sendChatMessage(
-            @RequestParam String roomId,
-            @RequestParam String content,
+            @RequestBody SendChatMessageRequest request,
             JwtAuthentication auth
     ) {
-        producer.sendChatMessage(roomId, content, auth);
+        producer.sendChatMessage(String.valueOf(request.getRoomId()), request.getContent(), auth);
         return ResponseEntity.ok().build();
     }
+
 }

@@ -12,14 +12,13 @@ import {
   Settings,
   LogOut,
 } from "lucide-react";
-import Image from "next/image";
 
 export default function HomePage() {
   const { user, logout, loading } = useAuth();
   const [serverInfo, setServerInfo] = useState<{
     message: string;
     version: string;
-    timestamp: string;
+    createdAt: string;
   } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
@@ -96,7 +95,7 @@ export default function HomePage() {
                       <span className="text-gray-500 w-24 flex-shrink-0">
                         타임스탬프
                       </span>
-                      <span className="ml-6">{serverInfo.timestamp}</span>
+                      <span className="ml-6">{serverInfo.createdAt}</span>
                     </p>
                   </div>
                 ) : null}

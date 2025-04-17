@@ -1,5 +1,6 @@
-package com.example.demo.domain.chat;
+package com.example.demo.domain.chat.consumer;
 
+import com.example.demo.domain.chat.service.ChatMessageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
@@ -8,13 +9,11 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class ChatKafkaConsumer {
 
-    private final RedisChatPublisher redisChatPublisher;
+    private final ChatMessageService chatMessageService;
 
     @KafkaListener(topics = "chat-messages", groupId = "chat-group")
     public void consume(String messageJson) {
         System.out.println("📥 Kafka 메시지 수신: " + messageJson);
-
-        // Redis로 publish
-        redisChatPublisher.publish("chat-channel", messageJson);
+        chatMessageService.handleIncomingMessage(messageJson);
     }
 }

@@ -28,7 +28,7 @@ public class NotificationWebSocketHandler implements WebSocketHandler {
         String userId = getUserIdFromQuery(session); // 쿼리에서 userId 파싱
         if (userId != null) {
             sessions.put(userId, session);
-            log.info("🔌 WebSocket 연결됨: {}", userId);
+            log.info("🔌 Notification WebSocket 연결됨: {}", userId);
         }
     }
 
@@ -45,7 +45,7 @@ public class NotificationWebSocketHandler implements WebSocketHandler {
         String userId = getUserIdFromQuery(session);
         if (userId != null) {
             sessions.remove(userId);
-            log.info("🔌 WebSocket 연결 종료: {}", userId);
+            log.info("🔌 Notification WebSocket 연결 종료: {}", userId);
         }
     }
 
