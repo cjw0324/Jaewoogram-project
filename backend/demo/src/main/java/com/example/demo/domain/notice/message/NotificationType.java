@@ -7,5 +7,6 @@ public enum NotificationType {
     REPLY_ADDED,
     FOLLOW,
     FOLLOW_REQUEST,
-    FOLLOW_ACCEPTED
+    FOLLOW_ACCEPTED,
+    DM
 }

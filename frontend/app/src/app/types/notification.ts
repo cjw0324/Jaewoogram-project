@@ -6,4 +6,5 @@ export enum NotificationType {
   FOLLOW_REQUEST = "FOLLOW_REQUEST",
   FOLLOW = "FOLLOW",
   FOLLOW_ACCEPTED = "FOLLOW_ACCEPTED",
+  DM = "DM",
 }
