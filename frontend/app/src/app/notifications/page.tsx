@@ -98,6 +98,8 @@ export default function NotificationPage() {
       case "FOLLOW_ACCEPTED":
         router.push(`/users/${n.senderId}`);
         break;
+      case "DM":
+        router.push(`/chat/${n.data.roomId}`);
       default:
         break;
     }
@@ -214,6 +216,8 @@ export default function NotificationPage() {
         return `${n.senderNickname}님이 회원님을 팔로우했습니다.`;
       case "FOLLOW_ACCEPTED":
         return `${n.senderNickname}님이 팔로우 요청을 수락했습니다.`;
+      case "DM":
+        return `${n.senderNickname}님이 DM을 보냈습니다 : "${n.data.content}"`;
       default:
         return "새로운 알림이 도착했습니다.";
     }
@@ -286,6 +290,7 @@ export default function NotificationPage() {
                     "님이 회원님을 팔로우하기 시작했습니다."}
                   {n.type === "FOLLOW_ACCEPTED" &&
                     "님이 팔로우 요청을 수락했습니다."}
+                  {n.type === "DM" && "님이 DM을 보냈습니다."}
                 </p>
 
                 {/* 댓글 내용이 있는 경우 보여주기 */}
