@@ -13,7 +13,6 @@ public class ChatKafkaConsumer {
 
     @KafkaListener(topics = "chat-messages", groupId = "chat-group")
     public void consume(String messageJson) {
-        System.out.println("📥 Kafka 메시지 수신: " + messageJson);
         chatMessageService.handleIncomingMessage(messageJson);
     }
 }

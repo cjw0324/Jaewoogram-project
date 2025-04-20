@@ -18,7 +18,6 @@ public class ChatKafkaProducer {
         try {
             String json = objectMapper.writeValueAsString(message);
             kafkaTemplate.send("chat-messages", json);
-            System.out.println("📤 Kafka 메시지 전송: " + json);
         } catch (JsonProcessingException e) {
             throw new RuntimeException("메시지 직렬화 실패", e);
         }
