@@ -1,4 +1,4 @@
-# 🐳 Jaewoo's Fullstack CI/CD Project
+# 🐳 Jaewoogram : Instagram Clone project
 
 - **웹사이트**: [https://www.jaewoo.site](https://www.jaewoo.site)
 - **API 엔드포인트**: [https://www.jaewoo.site/api](https://www.jaewoo.site/api)
