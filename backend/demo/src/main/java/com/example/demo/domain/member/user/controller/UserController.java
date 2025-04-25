@@ -38,7 +38,7 @@ public class UserController {
     public ResponseEntity<List<UserDto>> searchUsers(
             @RequestParam String nickname
     ) {
-        return ResponseEntity.ok(userService.searchByNickname_Elasticsearch(nickname));
+        return ResponseEntity.ok(userService.searchByNickname_MySQL(nickname));
     }
 
     @GetMapping("/{userId}")

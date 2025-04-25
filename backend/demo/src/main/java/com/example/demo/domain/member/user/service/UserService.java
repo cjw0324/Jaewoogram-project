@@ -49,39 +49,39 @@ public class UserService {
                 .map(UserDto::from)
                 .toList();
     }
+//
+//    @Transactional(readOnly = true)
+//    public List<UserDto> searchByNickname_Mongo(String keyword) {
+//        String lower = keyword.toLowerCase();
+//        return userMongoRepository.findByNicknameContaining(lower)
+//                .stream()
+//                .map(UserDto::from)
+//                .toList();
+//    }
 
-    @Transactional(readOnly = true)
-    public List<UserDto> searchByNickname_Mongo(String keyword) {
-        String lower = keyword.toLowerCase();
-        return userMongoRepository.findByNicknameContaining(lower)
-                .stream()
-                .map(UserDto::from)
-                .toList();
-    }
-
-    public List<UserDto> searchByNickname_Elasticsearch(String keyword) {
-        try {
-            SearchResponse<UserEsDocument> response = elasticsearchClient.search(s -> s
-                            .index("user")
-                            .query(q -> q
-                                    .wildcard(w -> w
-                                            .field("nickname.keyword")
-                                            .value("*" + keyword.toLowerCase() + "*")
-                                    )
-                            )
-                            .size(20),
-                    UserEsDocument.class
-            );
-
-            return response.hits().hits().stream()
-                    .map(hit -> UserDto.from(hit.source()))
-                    .filter(Objects::nonNull)
-                    .toList();
-
-        } catch (IOException e) {
-            throw new RuntimeException("Elasticsearch 닉네임 포함 검색 실패", e);
-        }
-    }
+//    public List<UserDto> searchByNickname_Elasticsearch(String keyword) {
+//        try {
+//            SearchResponse<UserEsDocument> response = elasticsearchClient.search(s -> s
+//                            .index("user")
+//                            .query(q -> q
+//                                    .wildcard(w -> w
+//                                            .field("nickname.keyword")
+//                                            .value("*" + keyword.toLowerCase() + "*")
+//                                    )
+//                            )
+//                            .size(20),
+//                    UserEsDocument.class
+//            );
+//
+//            return response.hits().hits().stream()
+//                    .map(hit -> UserDto.from(hit.source()))
+//                    .filter(Objects::nonNull)
+//                    .toList();
+//
+//        } catch (IOException e) {
+//            throw new RuntimeException("Elasticsearch 닉네임 포함 검색 실패", e);
+//        }
+//    }
 
 
     @Transactional(readOnly = true)
